@@ -1,24 +1,62 @@
-# SuperFine3D: Efficient Global-Local Recursive Refinement for Extremely Detailed 3D Geometry Generation
+<div align="center">
 
-**Lihan Li, Junwei Zhou, Yu-Wing Tai** · Dartmouth College
+# SuperFine3D
 
-SuperFine3D turns a single image into **4096³ geometry** (a sparse 256³ latent lattice) in about three minutes on one GPU.
-One refinement operator, trained only on paired 512³/1024³ TRELLIS.2 latents, is applied recursively
-(1024³ → 2048³ → 4096³). Spatial-cell attention replaces full self-attention over the hundreds of thousands of
-fine-grid tokens. Image-faithful relief comes from a fine-tuned one-step diffusion normal estimator.
+### Efficient Global-Local Recursive Refinement for Extremely Detailed 3D Geometry Generation
 
-- **Recursive refinement.** Each output latent supplies the guidance and the sparse support of the next stage.
-- **Spatial-cell attention.** Tokens attend within local cells, with bounded, boundary-prioritized cross-cell
-  communication. Cells are processed by index in one launch, and a FlashAttention-2 varlen kernel reads K/V by row index.
-- **Cross-scale guidance.** Spatially anchored coarse (parent) features and geometry-aware objectives keep the shape
-  while detail is added.
-- **Image-faithful detail.** A fine-tuned NiRNE estimator runs on tiles of the upsampled input and drives a band-limited
-  height field. A mesh-conditioned variant keeps albedo out of the geometry on textured inputs.
+**Lihan Li · Junwei Zhou · Yu-Wing Tai**<br>
+Dartmouth College
+
+<a href="https://lihhan.github.io/SuperFine3D/"><img alt="Project page" src="https://img.shields.io/badge/Project-Page-ff9a4a?style=for-the-badge"></a>
+<a href="docs/static/video/superfine3d_video.mp4"><img alt="Video" src="https://img.shields.io/badge/Video-3%3A11-6d93ff?style=for-the-badge"></a>
+<img alt="Paper" src="https://img.shields.io/badge/Paper-coming%20soon-555?style=for-the-badge">
+
+<img src="docs/static/img/preview_grid.webp" width="88%" alt="SuperFine3D results turning at 4096^3: chameleon, pangolin, owl, tortoise">
+
+**A single image &rarr; 4096³ geometry in about three minutes on one GPU.**
+
+</div>
+
+<p align="center"><img src="docs/static/img/fig1_teaser.jpg" width="100%" alt="High-resolution geometry with fine detail and efficient inference"></p>
+
+<p align="center"><sub><b>High-resolution geometry with fine detail and efficient inference.</b> Surface normals of GT, TRELLIS.2,
+Hunyuan3D-2.1, Pixal3D, Direct3D-S2, UltraShape and ours, with zooms A and B; detail quality vs. end-to-end time; latency of
+one attention layer and one DiT block vs. high-resolution tokens.</sub></p>
+
+| <h3>4096³</h3>decoder grid (sparse 256³ latent) | <h3>176 s</h3>image &rarr; 4096³ mesh | <h3>9.4&times;</h3>faster than full-attention recursion, 23.0% less memory | <h3>525&times;</h3>faster attention layer at 708k tokens | <h3>28&times;</h3>faster DiT block at 708k tokens |
+|:---:|:---:|:---:|:---:|:---:|
+
+## Overview
+
+SuperFine3D learns a **shared refinement operator** from paired coarse-to-fine representations and **recursively reuses it**
+to synthesize geometry beyond the training resolutions: trained only on 512³/1024³ TRELLIS.2 latents, it refines
+1024³ &rarr; 2048³ &rarr; 4096³, a sparse 256³ latent lattice.
+
+<p align="center"><img src="docs/static/img/fig2_pipeline.jpg" width="100%" alt="Overview of SuperFine3D"></p>
+
+<p align="center"><sub><b>Overview.</b> A pretrained generator produces a coarse 512³ shape, from which the input camera is
+estimated. At every level, detail normals estimated from the input image are injected into the current mesh; the corrected
+mesh is encoded at twice the resolution, partially noised, and refined by the shared refinement network conditioned on the
+preceding latent and the image (bottom).</sub></p>
+
+- **Spatial-cell attention** restricts high-resolution interactions to local spatial neighborhoods while keeping bounded,
+  boundary-prioritized communication across neighboring cells. All cells run in one indexed launch of a FlashAttention-2 varlen
+  kernel with fused 3D RoPE (`third_party/flash_attn_3d_rope_fa2`).
+- **Spatially anchored cross-scale guidance** uses globally contextualized coarse geometry to guide local detail synthesis
+  and preserve structural consistency.
+- **Geometry-aware training objectives** keep stable structures unchanged and introduce fine-grained surface detail.
+- **Image-faithful detail:** a fine-tuned one-step diffusion normal estimator, run on tiles of the upsampled input, drives a
+  band-limited height field; a mesh-conditioned variant keeps albedo out of the geometry.
 
 ## Results
 
-Geometric quality on Toys4K, from the paper's Table 1. CD-L1 is ×10³ and F-scores are percentages. Corr is the
-image-space normal correlation in the 4–16 px and 16–64 px bands, with each method's own fitted camera.
+<p align="center"><img src="docs/static/img/fig5_comparison.jpg" width="100%" alt="Comparison of fine geometric details"></p>
+
+<p align="center"><sub><b>Comparison of fine geometric details.</b> Inputs are 4096 px images generated with Nano Banana Pro,
+identical for all methods.</sub></p>
+
+Geometric quality on Toys4K (paper Table 1). Distances are scaled by 10³; F-scores are percentages. Corr is the image-space
+normal correlation in the 4–16 px and 16–64 px bands.
 
 | Method | Res. | CD-L1 ↓ | Ang. (°) ↓ | F@0.002 ↑ | DQ ↑ | Corr 4–16 ↑ | Corr 16–64 ↑ |
 |---|---|---|---|---|---|---|---|
@@ -29,13 +67,51 @@ image-space normal correlation in the 4–16 px and 16–64 px bands, with each 
 | **SuperFine3D** | 2048 | **15.639** | **27.44** | 17.107 | 0.5957 | 0.364 | 0.501 |
 | **SuperFine3D** | 4096 | 15.660 | 27.46 | **17.123** | **0.6474** | **0.368** | **0.518** |
 
-Efficiency was measured on one NVIDIA RTX PRO 6000 Blackwell:
-- **End to end:** an image becomes a 4096³ mesh in 176.2 s, with 48.5 GiB peak GPU memory. Interpreter start-up and
-  imports are excluded.
-- **Against a full-attention recursive baseline:** 9.4× faster, with 23.1% less memory.
-- **Against UltraShape:** 12.6× faster.
-- **Per layer, at 708k high-resolution tokens:** one attention layer is 525× faster and one DiT block 28× faster than
-  full attention (FlashAttention-2).
+End-to-end inference at 4096³-class resolution on the same input (paper Table 2):
+
+| Method | Time (s) ↓ | Peak memory (GiB) ↓ |
+|---|---|---|
+| TRELLIS.2-Rec. (full attention) | 1654.14 | 63.07 |
+| UltraShape | 2214.71 | – |
+| **SuperFine3D** | **176.19** | **48.54** |
+
+SuperFine3D is 9.4&times; faster than TRELLIS.2-Rec. with 23.0% less peak GPU memory, and about 12.6&times; faster than
+UltraShape.
+
+<details>
+<summary><b>More results</b> (beyond training resolution, off-view detail, textured inputs, input resolution, two views, ablations)</summary>
+
+<p align="center"><img src="docs/static/img/supp_more_comparisons.jpg" width="100%" alt="Additional comparisons"><br>
+<sub><b>Additional comparisons</b>: carved censer, guardian lion and pangolin (generated images), and ornate wooden door.</sub></p>
+
+<p align="center"><img src="docs/static/img/fig4_beyond_resolution.jpg" width="80%" alt="Generation beyond training resolutions"><br>
+<sub><b>Generation beyond training resolutions.</b></sub></p>
+
+<p align="center"><img src="docs/static/img/supp_offview.jpg" width="80%" alt="Detail holds off the input view"><br>
+<sub><b>Detail holds off the input view</b>: close-ups rendered with the object turned by 30&deg;.</sub></p>
+
+<p align="center"><img src="docs/static/img/supp_textured.jpg" width="100%" alt="Image appearance is not carved into the surface"><br>
+<sub><b>Image appearance is not carved into the surface</b>: carved feathers, chased medallions and carved scales are recovered;
+grain stripes and painted checks do not become relief.</sub></p>
+
+<p align="center"><img src="docs/static/img/supp_input_res.jpg" width="80%" alt="Detail follows the genuine image resolution"><br>
+<sub><b>Detail follows the genuine image resolution</b>: native 4096 px vs. 1024 px vs. 1024 px upsampled to 4096 px.</sub></p>
+
+<p align="center"><img src="docs/static/img/fig6_two_view.jpg" width="100%" alt="Novel-view comparison"><br>
+<sub><b>Novel-view comparison</b>: a single view stretches the dragon sideways; two views recover its pose.
+Photos: The Cleveland Museum of Art, Open Access (CC0).</sub></p>
+
+<p align="center"><img src="docs/static/img/ablation_injection.jpg" width="70%" alt="Ablation of detail injection and the estimator"><br>
+<sub><b>Ablation</b>: ground-truth render, w/o injection, original NiRNE, full model.</sub></p>
+
+<p align="center"><img src="docs/static/img/fig3_training.jpg" width="100%" alt="Training objective"><br>
+<sub><b>Training objective</b>: L<sub>keep</sub>, L<sub>detail</sub> (render space) and L<sub>edge</sub>, L<sub>plane</sub>
+(decoder space) are added to the flow-matching loss.</sub></p>
+
+</details>
+
+The project page (`docs/`) has the supplementary video, an interactive turntable that rotates SuperFine3D and the four
+baselines in sync, and close-up comparisons.
 
 ## Repository layout
 
