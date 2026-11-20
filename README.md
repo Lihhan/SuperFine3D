@@ -91,8 +91,9 @@ Photos: The Cleveland Museum of Art, Open Access (CC0).</sub></p>
 
 </details>
 
-The project page (`docs/`) has the supplementary video, an interactive turntable that rotates SuperFine3D and the four
-baselines in sync, and close-up comparisons.
+The [project page](https://lihhan.github.io/SuperFine3D-page/) (`docs/`) has an interactive 3D viewer: SuperFine3D side by
+side with each baseline under one camera, click-to-zoom, and hotspots that load full-resolution geometry; plus the
+supplementary video.
 
 ## Repository layout
 
