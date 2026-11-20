@@ -8,7 +8,6 @@
 Dartmouth College
 
 <a href="https://lihhan.github.io/SuperFine3D-page/"><img alt="Project page" src="https://img.shields.io/badge/Project-Page-ff9a4a?style=for-the-badge"></a>
-<a href="docs/static/video/superfine3d_video.mp4"><img alt="Video" src="https://img.shields.io/badge/Video-3%3A11-6d93ff?style=for-the-badge"></a>
 <img alt="Paper" src="https://img.shields.io/badge/Paper-coming%20soon-555?style=for-the-badge">
 
 **A single image &rarr; 4096³ geometry in about three minutes on one GPU.**
