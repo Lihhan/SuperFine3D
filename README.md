@@ -15,11 +15,6 @@ Dartmouth College
 
 </div>
 
-<p align="center"><img src="docs/static/img/detail_comparison.jpg" width="100%" alt="Detail comparison: input image, the same region of the input, SuperFine3D and four baselines"></p>
-
-<p align="center"><sub>Same region of the input image, SuperFine3D (4096³) and four baselines generated from the same input image,
-each rendered with its own fitted camera, identical material and lighting. Inputs generated with Nano Banana Pro.</sub></p>
-
 <p align="center"><img src="docs/static/img/fig1_teaser.jpg" width="100%" alt="High-resolution geometry with fine detail and efficient inference"></p>
 
 <p align="center"><sub><b>High-resolution geometry with fine detail and efficient inference.</b> Surface normals of GT, TRELLIS.2,
