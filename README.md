@@ -11,11 +11,14 @@ Dartmouth College
 <a href="docs/static/video/superfine3d_video.mp4"><img alt="Video" src="https://img.shields.io/badge/Video-3%3A11-6d93ff?style=for-the-badge"></a>
 <img alt="Paper" src="https://img.shields.io/badge/Paper-coming%20soon-555?style=for-the-badge">
 
-<img src="docs/static/img/preview_grid.webp" width="88%" alt="SuperFine3D results turning at 4096^3: chameleon, pangolin, owl, tortoise">
-
 **A single image &rarr; 4096³ geometry in about three minutes on one GPU.**
 
 </div>
+
+<p align="center"><img src="docs/static/img/detail_comparison.jpg" width="100%" alt="Detail comparison: input image, the same region of the input, SuperFine3D and four baselines"></p>
+
+<p align="center"><sub>Same region of the input image, SuperFine3D (4096³) and four baselines generated from the same input image,
+each rendered with its own fitted camera, identical material and lighting. Inputs generated with Nano Banana Pro.</sub></p>
 
 <p align="center"><img src="docs/static/img/fig1_teaser.jpg" width="100%" alt="High-resolution geometry with fine detail and efficient inference"></p>
 
@@ -55,6 +58,11 @@ preceding latent and the image (bottom).</sub></p>
 <p align="center"><sub><b>Comparison of fine geometric details.</b> Inputs are 4096 px images generated with Nano Banana Pro,
 identical for all methods.</sub></p>
 
+<p align="center"><img src="docs/static/img/fig4_beyond_resolution.jpg" width="100%" alt="Generation beyond training resolutions"></p>
+
+<p align="center"><sub><b>Generation beyond training resolutions.</b> The same operator, trained on 512³–1024³ pairs, refines
+1024³ &rarr; 2048³ &rarr; 4096³.</sub></p>
+
 Geometric quality on Toys4K (paper Table 1). Distances are scaled by 10³; F-scores are percentages. Corr is the image-space
 normal correlation in the 4–16 px and 16–64 px bands.
 
@@ -79,13 +87,10 @@ SuperFine3D is 9.4&times; faster than TRELLIS.2-Rec. with 23.0% less peak GPU me
 UltraShape.
 
 <details>
-<summary><b>More results</b> (beyond training resolution, off-view detail, textured inputs, input resolution, two views, ablations)</summary>
+<summary><b>More results</b> (off-view detail, textured inputs, input resolution, two views, ablations)</summary>
 
 <p align="center"><img src="docs/static/img/supp_more_comparisons.jpg" width="100%" alt="Additional comparisons"><br>
 <sub><b>Additional comparisons</b>: carved censer, guardian lion and pangolin (generated images), and ornate wooden door.</sub></p>
-
-<p align="center"><img src="docs/static/img/fig4_beyond_resolution.jpg" width="80%" alt="Generation beyond training resolutions"><br>
-<sub><b>Generation beyond training resolutions.</b></sub></p>
 
 <p align="center"><img src="docs/static/img/supp_offview.jpg" width="80%" alt="Detail holds off the input view"><br>
 <sub><b>Detail holds off the input view</b>: close-ups rendered with the object turned by 30&deg;.</sub></p>
