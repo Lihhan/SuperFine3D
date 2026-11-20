@@ -37,6 +37,11 @@ estimated. At every level, detail normals estimated from the input image are inj
 mesh is encoded at twice the resolution, partially noised, and refined by the shared refinement network conditioned on the
 preceding latent and the image (bottom).</sub></p>
 
+<p align="center"><img src="docs/static/img/fig4_beyond_resolution.jpg" width="100%" alt="Generation beyond training resolutions"></p>
+
+<p align="center"><sub><b>Recursive refinement, level by level.</b> Generation beyond training resolutions: the same operator, trained on 512³–1024³ pairs, refines
+1024³ &rarr; 2048³ &rarr; 4096³.</sub></p>
+
 - **Spatial-cell attention** restricts high-resolution interactions to local spatial neighborhoods while keeping bounded,
   boundary-prioritized communication across neighboring cells. All cells run in one indexed launch of a FlashAttention-2 varlen
   kernel with fused 3D RoPE (`third_party/flash_attn_3d_rope_fa2`).
@@ -52,11 +57,6 @@ preceding latent and the image (bottom).</sub></p>
 
 <p align="center"><sub><b>Comparison of fine geometric details.</b> Inputs are 4096 px images generated with Nano Banana Pro,
 identical for all methods.</sub></p>
-
-<p align="center"><img src="docs/static/img/fig4_beyond_resolution.jpg" width="100%" alt="Generation beyond training resolutions"></p>
-
-<p align="center"><sub><b>Generation beyond training resolutions.</b> The same operator, trained on 512³–1024³ pairs, refines
-1024³ &rarr; 2048³ &rarr; 4096³.</sub></p>
 
 End-to-end inference at 4096³-class resolution on the same input (paper Table 2):
 
