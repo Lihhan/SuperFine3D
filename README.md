@@ -81,9 +81,6 @@ UltraShape.
 <sub><b>Image appearance is not carved into the surface</b>: carved feathers, chased medallions and carved scales are recovered;
 grain stripes and painted checks do not become relief.</sub></p>
 
-<p align="center"><img src="docs/static/img/supp_input_res.jpg" width="80%" alt="Detail follows the genuine image resolution"><br>
-<sub><b>Detail follows the genuine image resolution</b>: native 4096 px vs. 1024 px vs. 1024 px upsampled to 4096 px.</sub></p>
-
 <p align="center"><img src="docs/static/img/fig6_two_view.jpg" width="100%" alt="Novel-view comparison"><br>
 <sub><b>Novel-view comparison</b>: a single view stretches the dragon sideways; two views recover its pose.
 Photos: The Cleveland Museum of Art, Open Access (CC0).</sub></p>
