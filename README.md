@@ -85,9 +85,6 @@ grain stripes and painted checks do not become relief.</sub></p>
 <sub><b>Novel-view comparison</b>: a single view stretches the dragon sideways; two views recover its pose.
 Photos: The Cleveland Museum of Art, Open Access (CC0).</sub></p>
 
-<p align="center"><img src="docs/static/img/ablation_injection.jpg" width="70%" alt="Ablation of detail injection and the estimator"><br>
-<sub><b>Ablation</b>: ground-truth render, w/o injection, original NiRNE, full model.</sub></p>
-
 <p align="center"><img src="docs/static/img/fig3_training.jpg" width="100%" alt="Training objective"><br>
 <sub><b>Training objective</b>: L<sub>keep</sub>, L<sub>detail</sub> (render space) and L<sub>edge</sub>, L<sub>plane</sub>
 (decoder space) are added to the flow-matching loss.</sub></p>
