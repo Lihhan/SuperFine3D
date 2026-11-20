@@ -58,18 +58,6 @@ identical for all methods.</sub></p>
 <p align="center"><sub><b>Generation beyond training resolutions.</b> The same operator, trained on 512³–1024³ pairs, refines
 1024³ &rarr; 2048³ &rarr; 4096³.</sub></p>
 
-Geometric quality on Toys4K (paper Table 1). Distances are scaled by 10³; F-scores are percentages. Corr is the image-space
-normal correlation in the 4–16 px and 16–64 px bands.
-
-| Method | Res. | CD-L1 ↓ | Ang. (°) ↓ | F@0.002 ↑ | DQ ↑ | Corr 4–16 ↑ | Corr 16–64 ↑ |
-|---|---|---|---|---|---|---|---|
-| TRELLIS.2 | 1536 | 15.711 | 35.40 | 17.075 | 0.5444 | 0.002 | 0.105 |
-| Hunyuan3D-2.1 | 1024 | 16.115 | 38.42 | 14.204 | 0.3680 | 0.006 | 0.110 |
-| Pixal3D | 1536 | 17.761 | 33.70 | 14.197 | 0.5319 | 0.038 | 0.268 |
-| UltraShape | 4096 | 17.381 | 35.76 | 12.083 | 0.1708 | 0.014 | 0.166 |
-| **SuperFine3D** | 2048 | **15.639** | **27.44** | 17.107 | 0.5957 | 0.364 | 0.501 |
-| **SuperFine3D** | 4096 | 15.660 | 27.46 | **17.123** | **0.6474** | **0.368** | **0.518** |
-
 End-to-end inference at 4096³-class resolution on the same input (paper Table 2):
 
 | Method | Time (s) ↓ | Peak memory (GiB) ↓ |
