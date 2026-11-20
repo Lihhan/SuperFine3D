@@ -1,0 +1,12 @@
+{
+  "approved_for_lr_matching": true,
+  "approval_basis": "User authorized training after speed gate; checkpoint integrity gate only",
+  "quality_qualified": false,
+  "cell_size": 16,
+  "near_budget": 128,
+  "boundary_budget": 96,
+  "architecture": "TF6_2_boundary_v1",
+  "checkpoint_sha256": "b0d71d92be7b1e241736704fbac5b45aaecff37be63b3250600f0c6fb121b9ff",
+  "official_sha256": "ae2f13437fceb61d7cb43dd42b2026f6a185a30995a231a8b594c4d1167b70ab",
+  "step": 5000
+}

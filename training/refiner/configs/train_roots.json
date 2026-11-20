@@ -1,0 +1,1 @@
+{"objaverse_sample": {"metadata": "${SF3D_DATA}/metadata", "shape_latent": "${SF3D_DATA}/shape_latent_1024", "shape_latent_lr": "${SF3D_DATA}/shape_latent_512", "render_cond": "${SF3D_DATA}/renders_cond"}}

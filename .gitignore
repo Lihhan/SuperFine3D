@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+# weights, caches, outputs, local builds
+checkpoints/**/*.pt
+checkpoints/**/*.safetensors
+checkpoints/stages/
+checkpoints/trellis2/
+.cache
+runs
+outputs
+third_party/site-packages
+third_party/TRELLIS.2
+third_party/Pixal3D
+third_party/StableNormal
+third_party/MoGe
+third_party/utils3d
+third_party/meshybench
+third_party/flash_attn_3d_rope_fa2/cutlass
+*.ply
+*.glb
+*.npz

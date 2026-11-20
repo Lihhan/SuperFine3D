@@ -1,0 +1,5 @@
+# Upstream TRELLIS.2 files copied in by setup/prepare_trellis2_variants.sh are not tracked;
+# only the fork files committed here are (add new ones with git add -f).
+*
+!.gitignore
+!LICENSE.TRELLIS.2
