@@ -69,6 +69,7 @@ def _est_cached(image,cam,res,model,**kw):
     if os.environ.get('EST_CACHE_LEVELS'):
         lv=sorted(int(x) for x in os.environ['EST_CACHE_LEVELS'].split(','));cur=_EST_LEVEL[0];grp='_L%d'%max([l for l in lv if l<=cur] or [lv[0]])
     key=hashlib.sha256(image[::7,::7].tobytes()+np.asarray(cam['P'],dtype=np.float64).tobytes()+str((res,sorted((k,str(x)) for k,x in kw.items() if k!='cond'))).encode()).hexdigest()[:16]
+    if os.environ.get('EST_COND_PER_LEVEL')=='1' and kw.get('cond') is not None:grp+='_C%d'%_EST_LEVEL[0]   # mesh-conditioned: per level
     f=path.replace('.npz','')+'_'+key+grp+'.npz'
     if os.path.exists(f):
         a=np.load(f);return torch.from_numpy(a['E']).cuda(),torch.from_numpy(a['m']).cuda()
@@ -76,6 +77,19 @@ def _est_cached(image,cam,res,model,**kw):
 estimator.estimate=_est_cached
 _EST_LEVEL=[0]
 _CC={}
+_AOTI={}
+def _aoti(m):
+    """AOTInductor packages of the re-estimation networks (setup/build_estimator_aot.sh), used when EST_AOTI points to them and
+    they were built on this GPU / torch version for this estimator checkpoint; otherwise None (eager networks)."""
+    d=os.environ.get('EST_AOTI')
+    if not d or getattr(m,'ckpt',None) is None:return None
+    k=(d,m.ckpt)
+    if k not in _AOTI:
+        meta=json.load(open(f'{d}/meta.json'));ok=(meta.get('gpu')==torch.cuda.get_device_name() and meta.get('torch')==torch.__version__
+            and meta.get('unet_ckpt')==estimator.ckpt_fingerprint(m.ckpt))
+        _AOTI[k]={n:torch._inductor.aoti_load_package(f'{d}/{n}.pt2') for n in ('enc','unet','dec')} if ok else None
+        if not ok:print('estimator AOT packages not used (built for another GPU / torch / checkpoint):',d,flush=True)
+    return _AOTI[k]
 _NIRNE_CALL=estimator.NiRNE.__call__
 @torch.no_grad()
 def _nirne_call_cc(self,tiles,conds=None):
@@ -96,10 +110,20 @@ def _nirne_call_cc(self,tiles,conds=None):
         ent=(padding,orig,tuple(dn),mid);_CC[key]=ent
     padding,orig,dn,mid=ent
     c=torch.stack([torch.as_tensor(x) for x in conds]).to(dev,dt)
-    pred=p.vae.encode(c).latent_dist.mode()*p.vae.config.scaling_factor
-    emb=torch.zeros(len(tiles),257,1024,device=dev,dtype=dt)
-    out=p.unet(pred,p.t_start,encoder_hidden_states=emb,down_block_additional_residuals=tuple(dn),mid_block_additional_residual=mid,return_dict=False)[0]
-    y=p.decode_prediction(out);y=p.image_processor.unpad_image(y,padding)
+    A=_aoti(self)
+    if A is not None and len(tiles)<=8:                               # AOTInductor networks (static batch 8: partial batches padded, extra outputs dropped)
+        n=len(tiles);sc=p.vae.config.scaling_factor;pad=lambda u:torch.cat([u,u[:1].expand(8-n,*u.shape[1:])]).contiguous() if n<8 else u.contiguous()
+        one=lambda r:r[0] if isinstance(r,(list,tuple)) else r
+        pred=one(A['enc'](pad(c)))*sc;emb8=torch.zeros(8,257,1024,device=dev,dtype=dt)
+        out=one(A['unet'](pred,emb8,pad(mid),*[pad(d) for d in dn]))
+        y=one(A['dec'](out/sc))[:n]
+        if not bool(torch.isfinite(y).all()):A=None                    # non-finite output (fp16 overflow): this batch with the eager networks
+        else:y=p.normalize_normals(y);y=p.image_processor.unpad_image(y,padding)
+    if A is None or len(tiles)>8:
+        pred=p.vae.encode(c).latent_dist.mode()*p.vae.config.scaling_factor
+        emb=torch.zeros(len(tiles),257,1024,device=dev,dtype=dt)
+        out=p.unet(pred,p.t_start,encoder_hidden_states=emb,down_block_additional_residuals=tuple(dn),mid_block_additional_residual=mid,return_dict=False)[0]
+        y=p.decode_prediction(out);y=p.image_processor.unpad_image(y,padding)
     y=p.image_processor.resize_antialias(y,orig,'bilinear',is_aa=False);y=p.normalize_normals(y)
     y=p.image_processor.pt_to_numpy(y)
     return [y[i] for i in range(len(tiles))]

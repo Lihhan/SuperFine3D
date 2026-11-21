@@ -1,10 +1,12 @@
 #!/bin/bash
-# Single image -> 4096^3 mesh with the configuration of the paper's Table 1 (Pixal3D 512^3 start, recursive refinement
-# 1024 -> 2048 -> 4096, image-faithful detail injection, fused DiT kernels). All speed switches are exact (same output).
+# Single image -> 4096^3 mesh (Pixal3D 512^3 start, recursive refinement 1024 -> 2048 -> 4096, image-faithful detail
+# injection, fused DiT kernels). The OPT_* speed switches below are exact (same output).
 # usage: scripts/infer.sh INPUT_RGBA.png OUT_DIR [RES] [START]
 #   RES   = 4096 (default) | 2048 | 1024
 #   START = pixal3d (default, Table 1: Pixal3D native 512^3 output placed in the input frame)
 #         | trellis2 (TRELLIS.2 512^3 shape; Pixal3D is not needed)        also settable as SF3D_START
+#   SF3D_PROFILE = quality (default: the detail-injection settings of the paper's figures, without TTA)
+#                | table1  (the configuration of Table 1 and of the reported timings)
 #   -> OUT_DIR/final_RES.ply, OUT_DIR/report.json (stage times, peak GPU memory)
 set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/setup/env.sh"

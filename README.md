@@ -96,8 +96,9 @@ supplementary video.
 
 | Path | Contents |
 |---|---|
-| `scripts/infer.sh` | image → mesh, Table-1 configuration |
-| `assets/examples/` | 4096² RGBA example inputs (pangolin, nautilus) |
+| `scripts/infer.sh` | image → mesh (`SF3D_PROFILE`: `quality` by default, `table1` for the configuration of Table 1) |
+| `scripts/infer_dual.sh`, `superfine3d/dual/` | two photos → mesh (the paper's two-view figure) |
+| `assets/examples/` | 4096² RGBA example inputs (pangolin, nautilus); `dual/`: the two photos of the two-view figure |
 | `superfine3d/detail/bench/bench_t1_body.py` | the end-to-end pipeline (stage list in its header) |
 | `superfine3d/refiner/code/` | refiner model (`ablation_model.py`, `structure.py`, stage packages `tf3`–`tf8`), spatial-cell attention session (`session.py`, `kernel_session.py`, `tf6_2/boundary_attention.py`), LR guidance (`custom_attention/lr_guidance.py`) |
 | `superfine3d/refiner/generate.py` | refinement driver (support construction, SDEdit sampling per level) |
@@ -149,6 +150,12 @@ Tested with Python 3.10, CUDA 12.8 and PyTorch 2.9.0 on RTX PRO 6000 Blackwell G
    into `third_party/Pixal3D/repo`. Install its Python requirements in its own Python 3.10 virtual environment
    (`third_party/Pixal3D/venv`) following its README; its CUDA extensions come from `third_party/site-packages` (step 2).
    Put its weights in `third_party/Pixal3D/weights`.
+   - **Two-view input** (only for `scripts/infer_dual.sh`):
+     - Pixal3D's two multi-view checkpoints `ckpts/ss_flow_img_dit_1_3B_64_bf16_mv.safetensors` and
+       `ckpts/slat_flow_img2shape_dit_1_3B_512_bf16_mv.safetensors` (TencentARC/Pixal3D on Hugging Face) in the same weights folder.
+     - [MASt3R](https://github.com/naver/mast3r) at commit `f5209af`, with its submodules, in `third_party/mast3r`;
+       `pip install roma scikit-learn` in the Pixal3D environment; the `naver/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric`
+       weights in the Pixal3D Hugging Face cache (or `SF3D_MAST3R_HF_CACHE`).
 5. **Detail estimator code and base weights**
    - Clone [hugoycj/StableNormal](https://github.com/hugoycj/StableNormal) at commit `1b7203c` into `third_party/StableNormal`
      (its YOSO pipeline differs from the Stable-X/StableNormal head):
@@ -169,16 +176,21 @@ Tested with Python 3.10, CUDA 12.8 and PyTorch 2.9.0 on RTX PRO 6000 Blackwell G
    ```
    The download link will be added here.
 8. **Locations:** edit the variables marked `set me` in `setup/env.sh`. Every script reads its locations from there.
+9. **Estimator build** (optional, recommended): `bash setup/build_estimator_aot.sh` compiles the detail-estimator networks
+   that the quality profile re-runs at every level (AOTInductor; 3–4 minutes, once per GPU and PyTorch version; each
+   network is checked against the eager one). Without it the same settings run with the eager networks.
 
 ## Inference
 
 ```bash
-# Pixal3D 512^3 start (Table 1) -> outputs/pangolin/final_4096.ply
+# Pixal3D 512^3 start -> outputs/pangolin/final_4096.ply
 bash scripts/infer.sh assets/examples/pangolin.png outputs/pangolin
 # 2048^3 output
 bash scripts/infer.sh assets/examples/pangolin.png outputs/pangolin_2048 2048
 # TRELLIS.2 512^3 start
 bash scripts/infer.sh assets/examples/nautilus.png outputs/nautilus 4096 trellis2
+# the configuration of Table 1 and of the reported timings
+SF3D_PROFILE=table1 bash scripts/infer.sh assets/examples/pangolin.png outputs/pangolin_table1
 ```
 
 `assets/examples/` holds the two 4096&times;4096 inputs of the project page's 3D viewer (AI-generated images).
@@ -192,6 +204,34 @@ An input must be an RGBA image whose alpha channel masks the object. Background 
 | `trellis2` | the TRELLIS.2 512³ shape of the reference frame, with its fitted camera | Pixal3D is not run and does not need to be installed. |
 
 Everything after the start is identical for both: detail injection, encodes, recursive refinement, decoding and export.
+
+**Detail-injection profile.** Set `SF3D_PROFILE`:
+
+| `SF3D_PROFILE` | Detail injection | Time, pangolin example |
+|---|---|---|
+| `quality` (default) | The settings of the paper's figures: injection gains 1.55 / 1.5 / 1.2, all detail bands, no evidence gate, flow alignment, and the mesh-conditioned detail estimate recomputed at every level (no test-time augmentation). | 418 s (about 1.2× `table1`) |
+| `table1` | The configuration of Table 1 and of the reported timings: gains 1.0, bands 32 / 16, evidence gate, estimate computed once. | 347 s (310 s on an idle node) |
+
+Times are end to end on one RTX PRO 6000 Blackwell (4096² input, 4096³ output, `report.json`), measured back to back on a shared node with the estimator build of step 9.
+
+### Two photos
+
+```bash
+E=assets/examples/dual
+bash scripts/infer_dual.sh $E/saint_george_view0.jpg:$E/saint_george_view0_mask.png \
+                           $E/saint_george_view1.jpg:$E/saint_george_view1_mask.png outputs/saint_george 18017
+```
+
+- **Inputs:** two photos of one object from the same camera and lens, each as an RGBA image or `PHOTO:MASK`. View 0 gives
+  the surface detail; view 1 constrains the shape. The fourth argument is the focal length in pixels (from EXIF:
+  focal_mm / sensor_width_mm × image width); without it the MASt3R pointmap focal of the pair is used.
+- **Steps:** single-view Pixal3D on view 0 (defines the world) → PnP of view 0 → MASt3R matches → views rectified with
+  the true focal, relative pose from the essential matrix → Pixal3D multi-view 512³ start → the exact camera of view 0
+  in that world → `scripts/infer.sh` with this start (`SF3D_START=given`). Intermediate files are in `OUT/dual/`.
+- **Example:** the photos of the paper's two-view figure (Cleveland Museum of Art, *Saint George and the Dragon*,
+  1959.341, CC0). The command above reproduces the paper's mesh: every intermediate file up to the start is identical,
+  and the final silhouette IoU at the two input photos and the two held-out photos (0.935 / 0.924 / 0.639 / 0.813)
+  matches the paper's.
 - **`report.json`** records the time and peak GPU memory of every stage.
 - **Stages:**
   1. TRELLIS.2 reference frame and input camera.
@@ -201,8 +241,9 @@ Everything after the start is identical for both: detail injection, encodes, rec
   4. Encode 2048³ → refine → decode.
   5. Inject → encode 4096³ → refine → decode.
   6. Final band-limited injection and hole capping.
-- **Exactness:** all speed switches set by `scripts/infer.sh` give the same output as the reference path.
-  `FUSED=0` falls back to the unfused DiT.
+- **Exactness:** the `OPT_*` speed switches set by `scripts/infer.sh` give the same output as the reference path.
+  `FUSED=0` falls back to the unfused DiT. The quality profile's estimator acceleration (cuDNN autotuning, AOTInductor
+  networks) changes the estimate only at fp16 rounding level.
 
 ## Training
 
@@ -284,6 +325,8 @@ SuperFine3D builds on [TRELLIS.2](https://github.com/microsoft/TRELLIS.2),
 [Pixal3D](https://github.com/TencentARC/Pixal3D), [StableNormal / NiRNE](https://github.com/Stable-X/StableNormal),
 [FlashAttention](https://github.com/Dao-AILab/flash-attention) and [MeshyBench](https://github.com/meshy-dev/meshybench).
 See `THIRD_PARTY_NOTICES.md` for the files derived from them and their licenses.
+The two-view pipeline also calls [MASt3R](https://github.com/naver/mast3r) (CC BY-NC-SA 4.0; not included, installed separately).
+The two-view example photos are from the Cleveland Museum of Art Open Access collection (CC0).
 
 ## Citation
 

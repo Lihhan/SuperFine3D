@@ -13,6 +13,11 @@ export SF3D_PIXAL3D_HF_CACHE="${SF3D_PIXAL3D_HF_CACHE:-$SF3D_PIXAL3D/hf_cache}"
 export SF3D_STABLENORMAL="${SF3D_STABLENORMAL:-$SF3D_ROOT/third_party/StableNormal}"  # github.com/hugoycj/StableNormal @ 1b7203c
 export SF3D_NIRNE_WEIGHTS="${SF3D_NIRNE_WEIGHTS:-}"                         # set me: local snapshot of Stable-X/yoso-normal-v1-8-1
 export SF3D_CACHE="${SF3D_CACHE:-$SF3D_ROOT/.cache}"
+# two-view input only (scripts/infer_dual.sh)
+export SF3D_MAST3R="${SF3D_MAST3R:-$SF3D_ROOT/third_party/mast3r}"          # github.com/naver/mast3r @ f5209af, with its submodules
+export SF3D_MAST3R_DEPS="${SF3D_MAST3R_DEPS:-}"                             # optional site dir with MASt3R's extra requirements (roma, scikit-learn)
+export SF3D_MAST3R_HF_CACHE="${SF3D_MAST3R_HF_CACHE:-$SF3D_PIXAL3D_HF_CACHE}"   # holds naver/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric
+export SF3D_PIXAL3D_MV_WEIGHTS="${SF3D_PIXAL3D_MV_WEIGHTS:-$SF3D_PIXAL3D/weights}"   # Pixal3D weights incl. the two *_mv checkpoints
 # optional (only for switches that are off in the default configuration)
 export SF3D_MOGE="${SF3D_MOGE:-$SF3D_ROOT/third_party/MoGe}" SF3D_UTILS3D="${SF3D_UTILS3D:-$SF3D_ROOT/third_party/utils3d}"
 export SF3D_MOGE_WEIGHTS="${SF3D_MOGE_WEIGHTS:-}"

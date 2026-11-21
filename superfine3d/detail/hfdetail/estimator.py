@@ -112,6 +112,11 @@ def target_map(n_obj, image_rgb, res):
     m = F_.interpolate(fg[None, None], size=(res, res), mode='area')[0, 0] > 0.99
     return n * m[..., None], m
 
+def ckpt_fingerprint(path):
+    """Identity of an estimator checkpoint for the AOT packages: size and SHA-256 of its first and last MiB."""
+    import hashlib; n = os.path.getsize(path); h = hashlib.sha256(str(n).encode())
+    with open(path, "rb") as f: h.update(f.read(1 << 20)); f.seek(max(n - (1 << 20), 0)); h.update(f.read())
+    return h.hexdigest()[:32]
 class NiRNE:
     """NiRNE (Hi3DGen yoso-normal-v1-8-1) with optional fine-tuned UNet/controlnet weights (ft_nirne/ft_train.py)."""
     def __init__(self, ckpt=None, weights=f'{_E["SF3D_NIRNE_WEIGHTS"]}', device='cuda'):
@@ -123,6 +128,8 @@ class NiRNE:
             sd = torch.load(ckpt, map_location=device)
             for k, mdl in (('unet', self.pipe.unet), ('controlnet', self.pipe.controlnet)):
                 if k in sd: mdl.load_state_dict({a: b.half() for a, b in sd[k].items()})
+        self.ckpt = ckpt
+        if os.environ.get('EST_CUDNN') == '1': torch.backends.cudnn.benchmark = True   # quality profile: autotuned convolutions
     @torch.no_grad()
     def __call__(self, tiles, conds=None):
         """The YOSONormalsPipeline.__call__ steps (preprocess, VAE encode, controlnet + UNet at t_start, decode, unpad,

@@ -1,4 +1,9 @@
-"""SuperFine3D end-to-end pipeline (image -> 1024^3 / 2048^3 / 4096^3 mesh) with the Table-1 configuration.
+"""SuperFine3D end-to-end pipeline (image -> 1024^3 / 2048^3 / 4096^3 mesh).
+Detail-injection profile, chosen with SF3D_PROFILE:
+  quality  (default) the injection settings of the paper's figures without test-time augmentation: gains 1.55 / 1.5 / 1.2,
+           all bands (K 64), no evidence gate (SHRINK), flow alignment, and the mesh-conditioned detail estimate recomputed
+           at every level; estimator accelerated with cuDNN autotuning and, if built, AOTInductor networks
+  table1   the configuration of Table 1 and of the timings (gains 1.0, K 32/16, SHRINK 8/16, no alignment, estimate once)
 512^3 start, chosen with SF3D_START:
   pixal3d  (default, Table 1) Pixal3D native 512 output, placed in the TRELLIS.2 reference frame and re-fitted to the input
   trellis2 the TRELLIS.2 512 shape of the reference frame itself (with its fitted camera); Pixal3D is not run
@@ -65,14 +70,18 @@ OPT['bilat_ec']=os.environ.get('OPT_BILAT_EC')=='1'
 OPT['bilat_dec4096']=os.environ.get('OPT_BILAT_MODE')=='dec4096'   # opt-in: no filtering at 2048 (the 4096 encode gets the unfiltered 2048 mesh), = pipeline DEC4096_BILAT + FINAL_BILAT   # diagnostic: release the CUDA cache after each bilateral call (no numeric change)
 OPT['noinit']=os.environ.get('OPT_NOINIT','0')=='1'     # exact: models built without random init, every parameter from the checkpoint (bench/noinit.py)
 START=os.environ.get('SF3D_START','pixal3d').lower().replace('.','').replace('-','').replace('_','')   # 512^3 start: pixal3d (Table 1) | trellis2
-assert START in ('pixal3d','trellis2'),f'SF3D_START must be pixal3d or trellis2, not {START!r}'
-PIXAL=START=='pixal3d'
+assert START in ('pixal3d','trellis2','given'),f'SF3D_START must be pixal3d, trellis2 or given, not {START!r}'
+PIXAL=START=='pixal3d';GIVEN=START=='given'   # given: a prepared start (SF3D_START_DIR: mesh_512.ply, cam_fit.json, cam_refined.json, input.png),
+GD=os.environ.get('SF3D_START_DIR') if GIVEN else None   # e.g. the two-view start of scripts/infer_dual.sh; the input image gives the conditions only
 CAMFAST_REF=dict(CAMREF_THREADS='12',CAMREF_LOCKSTEP='1',CAMREF_FNCACHE='1',CAMREF_MEMO='1',CAMREF_GRIDBATCH='72',CAMREF_FASTNORM='1')
 CACHE=f'{_E["SF3D_TRELLIS2_WEIGHTS"]}'
 CK=f'{_E["SF3D_CKPT"]}/estimator/grey/ckpt_04000.pt'   # grey-route detail estimator
 def kv(s):return dict(x.split('=',1) for x in s.split())
 CAL=f"ROUTE=1 RGB_CKPT={_E['SF3D_CKPT']}/estimator/rgb/ckpt_last.pt COND=0 CKPT={CK} K=64 GAIN=1.55 FK=4 FG=1.2 MAXD=6 LAP=0.003 LAPH=0.05 EDGE=0.5 LEVELS=3 ALIGN=1 TTA=0 RGB_GAIN=1.5 RGB_FK=4"
-X=' GAIN=1.0 RGB_GAIN=1.0 FG=1.0 SHRINK=8 SHRINK_R=2 K=32 ALIGN=0';XF=' K=16 SHRINK=16'   # arms/T1.sh
+PROFILE=os.environ.get('SF3D_PROFILE','quality').lower()      # detail-injection profile: quality (default) | table1
+assert PROFILE in ('quality','table1'),PROFILE
+if PROFILE=='table1':X=' GAIN=1.0 RGB_GAIN=1.0 FG=1.0 SHRINK=8 SHRINK_R=2 K=32 ALIGN=0';XF=' K=16 SHRINK=16'   # arms/T1.sh: Table 1
+else:X='';XF=''      # quality: the figure settings (gains 1.55/1.5/1.2, all bands, no evidence gate, flow alignment), no TTA
 INJ=dict(MAXD='3');INJ.update(kv(CAL+X));INJ512=dict(INJ,K='64');INJ1=dict(INJ,K='64');FIN=dict(INJ);FIN.update(kv(XF))
 OPT['malign']=os.environ.get('OPT_MALIGN','')
 if OPT['malign']:INJ512['MALIGN']=OPT['malign']   # opt-in (metric round 9/10): move the start onto the image at the 512 level (= INJ512CFG MALIGN)   # = pipeline_v3_fast.py cfg construction (INJ512CFG / INJ1024 K=64)
@@ -177,15 +186,17 @@ def pipe(names):
     p=Trellis2ImageTo3DPipeline.from_pretrained(CACHE);p.low_vram=True;p.to('cuda');return p
 if OPT['noinit']:import noinit;noinit.wrap(models)
 with stage('frontend'):
-    p=pipe(['sparse_structure_flow_model','sparse_structure_decoder','shape_slat_flow_model_512','shape_slat_decoder'])
+    p=pipe([] if GIVEN else ['sparse_structure_flow_model','sparse_structure_decoder','shape_slat_flow_model_512','shape_slat_decoder'])
     if OPT['parvox']:parvox.start(OPT['encpipe'] or OPT['parvox'])      # worker pools start after the model loads, their imports overlap the GPU sampling
     if OPT['campool']:campool.start(OPT['campool'])
     im=p.preprocess_image(Image.open(INP).convert('RGBA'))
     c512=p.get_cond([im],512);cond1024=p.get_cond([im],1024)
     os.makedirs(f'{WD}/frontend',exist_ok=True);torch.save({k:v_.cpu() for k,v_ in cond1024.items()},f'{WD}/frontend/image_cond.pt')   # for the block replay
-    torch.manual_seed(42);coords=p.sample_sparse_structure(c512,resolution=32,num_samples=1,sampler_params=dict(p.sparse_structure_sampler_params))   # = native512.py: upstream run(pipeline_type='512', seed=42), one seed
-    z512=p.sample_shape_slat(c512,p.models['shape_slat_flow_model_512'],coords)
-with stage('decode512'):
+    if not GIVEN:
+     torch.manual_seed(42);coords=p.sample_sparse_structure(c512,resolution=32,num_samples=1,sampler_params=dict(p.sparse_structure_sampler_params))   # = native512.py: upstream run(pipeline_type='512', seed=42), one seed
+     z512=p.sample_shape_slat(c512,p.models['shape_slat_flow_model_512'],coords)
+if not GIVEN:
+ with stage('decode512'):
     m=p.decode_shape_slat(z512,512)[0][0];v512=m.vertices.float();F512=m.faces.long()
     for k in ('sparse_structure_flow_model','shape_slat_flow_model_512'):p.models[k].cpu()
     del m;gc.collect();torch.cuda.empty_cache()   # the decoder stays for the placed start
@@ -196,6 +207,10 @@ def runscript(path,argv,env=None):
     try:runpy.run_path(path,run_name='__main__')
     except SystemExit:pass
     finally:sys.argv=old
+if PROFILE=='quality':
+    os.environ['EST_CUDNN']='1'                               # cuDNN autotuned convolutions in the estimator (fp16 rounding-level changes)
+    _ad=f'{_E["SF3D_CACHE"]}/aoti'                            # AOTInductor estimator networks (setup/build_estimator_aot.sh), if built
+    if os.path.exists(f'{_ad}/meta.json') and os.environ.get('SF3D_EST_AOT','1')=='1':os.environ['EST_AOTI']=_ad
 PRELOADED={}
 def preload_nirne():                # the detail estimators (diffusers): loading toggles the process-wide torch default dtype (fp16), so it
     q_=L.parse(dict(INJ512,UNIT='1/512'));L.model(q_['CK']);L.model(q_['RGB_CK'])   # must never overlap camera code of this process
@@ -210,7 +225,9 @@ def preload():                      # OPT_PRELOAD: weights only (no computation 
         state=torch.load(f'{_E["SF3D_CKPT"]}/refiner/denoiser_step0002000.pt',map_location='cpu',weights_only=True);_ks|=set(state);m.load_state_dict(state,strict=False);del state
 
         PRELOADED['refiner']=(cfg,m)
-if OPT['campar']:                    # exact: one Powell start per process, the scripts' own selection (whole/campar.py)
+if GIVEN:                            # prepared start: its camera comes with it (no fit)
+  if OPT['preload']:PRE=__import__('concurrent.futures',fromlist=['x']).ThreadPoolExecutor(1).submit(lambda:preload())
+elif OPT['campar']:                  # exact: one Powell start per process, the scripts' own selection (whole/campar.py)
     with stage('camera'):
         e=dict(os.environ);e['PYTHONPATH']=':'.join([f'{_E["SF3D_ROOT"]}/third_party/site-packages']+[q for q in sys.path if q])
         r=subprocess.run([sys.executable,f'{P}/whole/campar.py',f'{WD}/input.png',f'{WD}/mesh_512.ply',WD],env=e,capture_output=True,text=True,cwd=_E['SF3D_ROOT'])
@@ -247,7 +264,13 @@ else:
     CAMW=max(sum(w) for w in WPK)/2**30 if WPK else 0.;PEAKS['camera_workers_sum']=round(CAMW,2);PEAK[0]=max(PEAK[0],max(PEAKS['camera_fit'],PEAKS['camera_refine'])+CAMW)
   for k in ('CAMFIT_HULL','CAMFIT_THREADS','CAMREF_HULL','CAMREF_LEAN','CAMREF_THREADS'):os.environ.pop(k,None)
 D=f'{WD}/start';os.makedirs(D,exist_ok=True)
-if not PIXAL:                                   # TRELLIS.2 start: the reference frame itself (its 512 latent, decoded mesh and fitted camera)
+if GIVEN:
+  PXPEAK={}
+  with stage('start512'):
+    if OPT['preload'] and OPT['preload_split']:PRE.result();preload_nirne()
+    for f_ in ('mesh_512.ply','input.png','cam_fit.json','cam_refined.json'):shutil.copy(f'{GD}/{f_}',f'{D}/{f_}')
+    del p;gc.collect();torch.cuda.empty_cache()
+elif not PIXAL:                                 # TRELLIS.2 start: the reference frame itself (its 512 latent, decoded mesh and fitted camera)
   PXPEAK={}
   with stage('start512'):
     if OPT['preload'] and OPT['preload_split']:PRE.result();preload_nirne()   # refiner thread done first (no concurrent model construction)
@@ -282,6 +305,8 @@ with stage('crop'):
 img=L.load_image(f'{D}/input_crop.png');cam=L.load_cam(f'{D}/cam_refined.json')
 _vm,_Fm=L.read_mesh(f'{D}/mesh_512.ply');v512=torch.from_numpy(_vm).float().cuda();F512=torch.from_numpy(_Fm).long().cuda()
 os.environ.update(EST_CACHE=f'{WD}/est.npz',EST_CACHE_F32='1',EST_GPU_ACC='1',EST_CTRL_CACHE='1')   # arms/T1.sh + pipeline_v3_fast exact switches
+if PROFILE=='quality':os.environ['EST_COND_PER_LEVEL']='1'   # mesh-conditioned estimates are recomputed at every level (the estimate
+                                                          # depends on the current mesh); image-only estimates are reused
 EST={}
 def inject(v,F,unit,cfg):
     c=dict(cfg);c['UNIT']=unit
@@ -406,7 +431,7 @@ else:
         with stage('export'):export(v,F,'final_4096.ply')
 torch.cuda.synchronize();total=time.time()-T0
 _ov=max([PEAKS.get(k,0) for k in OVERLAP]+[0]);PEAK[0]=max(PEAK[0],_ov+(PXPEAK.get('peak_gib') or 0))   # concurrent Pixal3D process counts toward the peak
-rep=dict(config=f'Table-1 configuration, {START} 512 start',start=START,pixal3d=PXPEAK,overlap_stages=OVERLAP,target=TARGET,total_seconds=round(total,2),startup_and_imports_seconds=round(T0-T_START,2),pixal_warmup_seconds=round(WARM,2),times=times,peak_allocated_gib=round(PEAK[0],3),stage_peak_gib=PEAKS,
+rep=dict(config=(f'Table-1 configuration, {START} 512 start' if PROFILE=='table1' else f'quality profile, {START} 512 start'),profile=PROFILE,estimator_aot=bool(os.environ.get('EST_AOTI')),start=START,pixal3d=PXPEAK,overlap_stages=OVERLAP,target=TARGET,total_seconds=round(total,2),startup_and_imports_seconds=round(T0-T_START,2),pixal_warmup_seconds=round(WARM,2),times=times,peak_allocated_gib=round(PEAK[0],3),stage_peak_gib=PEAKS,
          peak_reserved_gib=round(torch.cuda.max_memory_reserved()/2**30,3),opt=OPT,input=INP,contention=marks,timing_valid=not marks,gpu_name=torch.cuda.get_device_name(0),
          gpu_shared=SHARED,foreign_pids_seen=sorted(SEEN),stage_load1=LOADS)
 json.dump(rep,open(OUTJ,'w'),indent=1);print('BENCH',json.dumps(rep),flush=True)
