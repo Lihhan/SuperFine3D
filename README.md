@@ -174,7 +174,15 @@ Tested with Python 3.10, CUDA 12.8 and PyTorch 2.9.0 on RTX PRO 6000 Blackwell G
    checkpoints/estimator/grey/ckpt_04000.pt      (2.3 GB; detail estimator, grey route)
    checkpoints/estimator/rgb/ckpt_last.pt        (2.3 GB; mesh-conditioned detail estimator, textured inputs)
    ```
-   The download link will be added here.
+   Download them from [Google Drive](https://drive.google.com/drive/folders/1I2KeboWe3f-i4HSIXzOqh1bS0qYn3INC?usp=drive_link)
+   (4.7 GB), check them and copy them into `checkpoints/` (the default `SF3D_CKPT`):
+   ```bash
+   pip install gdown
+   gdown --folder https://drive.google.com/drive/folders/1I2KeboWe3f-i4HSIXzOqh1bS0qYn3INC -O SuperFine3D_weights
+   (cd SuperFine3D_weights && sha256sum -c SHA256SUMS)      # three lines ending in OK
+   cp -r SuperFine3D_weights/checkpoints/. checkpoints/
+   ```
+   If gdown stops at Google Drive's download limit, download the folder in a browser instead and run the same check.
 8. **Locations:** edit the variables marked `set me` in `setup/env.sh`. Every script reads its locations from there.
 9. **Estimator build** (optional, recommended): `bash setup/build_estimator_aot.sh` compiles the detail-estimator networks
    that the quality profile re-runs at every level (AOTInductor; 3–4 minutes, once per GPU and PyTorch version; each
