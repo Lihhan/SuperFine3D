@@ -21,7 +21,7 @@ import trimesh,numpy as np
 m=trimesh.load('$M',process=False,force='mesh');v=np.asarray(m.vertices);c=(v.max(0)+v.min(0))/2;s=np.ptp(v,0).max();v=(v-c)/s
 m.vertices=np.stack([v[:,0],-v[:,2],v[:,1]],1);m.export('$ZM')"
       [ -f $z/cam_fit.json ] || nice -n 10 $PYU $P/dualcand/fit_wide.py $IMG $ZM $z/cam_fit.json > $z/fit.log 2>&1
-      [ -f $z/cam_refined.json ] || CAM_IOU_REL=0.1 CUDA_VISIBLE_DEVICES=$(gpu) nice -n 10 bash $TF $P/whole/camera_refine.py $IMG $ZM $z/cam_fit.json $z/cam_refined.json > $z/refine.log 2>&1
+      [ -f $z/cam_refined.json ] || CAM_IOU_REL=0.1 CAM_FOV_FILTER=1 CUDA_VISIBLE_DEVICES=$(gpu) nice -n 10 bash $TF $P/whole/camera_refine.py $IMG $ZM $z/cam_fit.json $z/cam_refined.json > $z/refine.log 2>&1
       i2=$(iou $z/cam_refined.json); python3 -c "import sys;sys.exit(0 if float('$i2')>float('$i1') else 1)" && use="$ZM@$z"
       echo "$K $m raw IoU $i1, zup IoU $i2 -> ${use##*@}" >> $W/t4kcam/choices.log; fi
     A+=("$m=$use"); done

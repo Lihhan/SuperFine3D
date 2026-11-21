@@ -3,7 +3,8 @@ below has nearly the same outline). Parametrisation as fit_input_camera.py: came
 at the training-render distance for the fov, roll free, 2D similarity (s, du, dv) on the preprocess crop.
 Objective = (1 - silhouette IoU) + LAM * (1 - NCC(edges of the input crop, edges of the mesh's shaded render)), both at
 512 px; edges = Sobel magnitude. Candidates: the silhouette fit and its mirrors (pitch -> -pitch, yaw -> yaw+180, both),
-each locally optimised (Powell); best objective wins.
+each locally optimised (Powell); best objective wins among the candidates whose silhouette IoU is within CAM_IOU_REL
+(default 0.05) of the best one, so a high edge score cannot outweigh a poor outline.
 usage: camera_refine.py INPUT_PNG MESH1024 FIT_JSON OUT_JSON   (FIT_JSON from fit_input_camera.py)"""
 from os import environ as _E   # install locations, set by setup/env.sh (SF3D_ROOT, SF3D_CKPT, ...)
 import os,sys,json,math,numpy as np,torch,torch.nn.functional as F
@@ -195,10 +196,11 @@ for _j,q in enumerate(cands):
         json.dump(dict(o=o1[0],q=[float(x) for x in r.x],o1=[float(x) for x in o1]),open(f"{os.environ['CAMREF_PARTDIR']}/part{_only}.json",'w'));sys.exit(0)
     res.append((o1[0],r.x,o1));print('start yaw %.0f pitch %.0f: obj %.3f (IoU %.3f NCC %.3f) -> %.3f (IoU %.3f NCC %.3f)'%(q[0],q[1],*o0,*o1),flush=True)
 if os.environ.get('CAMREF_DUMP'):json.dump([dict(o1=[float(v) for v in x[2]],q=[float(v) for v in x[1]]) for x in res],open(os.environ['CAMREF_DUMP'],'w'))
-_fl=float(os.environ.get('CAM_IOU_FLOOR','0'))   # opt-in: ignore degenerate optima (low IoU, field of view at the clamp)
-_rel=float(os.environ.get('CAM_IOU_REL','0'))   # opt-in: only candidates within _rel of the best silhouette IoU
+_fl=float(os.environ.get('CAM_IOU_FLOOR','0'))   # opt-in: absolute silhouette-IoU floor (with the field-of-view filter below)
+_fov=os.environ.get('CAM_FOV_FILTER','1' if _fl>0 else '0')=='1'   # opt-in: drop optima whose field of view is at the clamp
+_rel=float(os.environ.get('CAM_IOU_REL','0.05'))   # only candidates within _rel of the best silhouette IoU (0 = off)
 if _rel>0:_fl=max(_fl,max(x[2][1] for x in res)-_rel)
-_ok=[x for x in res if x[2][1]>=_fl and 8.<x[1][3]<70.] if _fl>0 else res
+_ok=[x for x in res if x[2][1]>=_fl and (not _fov or 8.<x[1][3]<70.)] if _fl>0 else res
 if os.environ.get('CAM_PITCH_MIN') is not None:   # opt-in: viewpoint side known (e.g. a rendered input seen from above); a near-symmetric
     _pm=float(os.environ['CAM_PITCH_MIN']);_ok=[x for x in (_ok or res) if x[1][1]>=_pm]   # outline otherwise lets the mirrored view win
 best=min(_ok or res,key=lambda x:x[0]);q=best[1];P,ax=fullP(q)
