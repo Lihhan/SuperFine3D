@@ -18,7 +18,6 @@ appearance refinement) -> input crop -> inject@512 -> encode 1024 -> [1024: deco
  -> inject@1024 -> encode 2048 -> refine 2048 (partial noise t0) -> decode 2048 -> [2048: final inject + cap + export]
  -> inject@2048 -> encode 4096 -> refine 4096 -> decode 4096 -> inject@4096 -> cap -> export.
 Optimisation switches (env, default off = round 0, faithful to pipeline_v3):
-  OPT_EST_CACHE=1  estimate detail normals once and reuse at every level (grey route: the estimate does not depend on the mesh)
   OPT_NSLAB=k      slabs for the 4096 encode (pipeline default 3)
   OPT_FIT_FAST=1   camera: single refinement start from the silhouette fit + mirrors only (no extra grid starts)
   OPT_DEC_RESIDENT=1  keep decoder/refiner resident between stages
@@ -51,14 +50,14 @@ models.__path__.insert(0,f'{N}/code/custom_models');attention.__path__.insert(0,
 from trellis2.modules.sparse import SparseTensor
 from trellis2.pipelines.trellis2_image_to_3d import Trellis2ImageTo3DPipeline
 import inject_lib as L
-from hfdetail import latent_io,cleanup,pipeline as hpipe,heightfield as hf,estimator as hest
+from hfdetail import latent_io,cleanup
 latent_io.patch_int64()                                   # encoder patches first (they read the original sources)
 import o_voxel.convert.flexible_dual_grid as _fdg;assert _fdg._init_hashmap(torch.tensor([2048]*3,dtype=torch.int32),8,'cpu')[0].dtype==torch.uint64   # same int64 volume patch decode.py applies
 torch.set_grad_enabled(False);torch.backends.cuda.matmul.allow_tf32=False   # as the production scripts: TF32 only in refinement (generate.py) and decoding (decode.py), see tf32()
 class tf32:
     def __enter__(s):s.o=torch.backends.cuda.matmul.allow_tf32;torch.backends.cuda.matmul.allow_tf32=True
     def __exit__(s,*a):torch.backends.cuda.matmul.allow_tf32=s.o
-OPT=dict(parvox=int(os.environ.get('OPT_PARVOX','0')),campar=os.environ.get('OPT_CAMPAR','0')=='1',est_cache=os.environ.get('OPT_EST_CACHE','0')=='1',nslab=int(os.environ.get('OPT_NSLAB','3')),fit_fast=os.environ.get('OPT_FIT_FAST','0')=='1',camthreads=int(os.environ.get('OPT_CAMTHREADS','0')),preload=os.environ.get('OPT_PRELOAD','0')=='1',route_fast=os.environ.get('OPT_ROUTE_FAST','0')=='1',dec_fast=os.environ.get('OPT_DEC_FAST','0')=='1',export_lean=os.environ.get('OPT_EXPORT_LEAN','0')=='1',campool=int(os.environ.get('OPT_CAMPOOL','0')),camshare=os.environ.get('OPT_CAMSHARE','0')=='1',camlock=os.environ.get('OPT_CAMLOCK','0')=='1',vox_min=int(os.environ.get('OPT_VOX_MIN','2048')))
+OPT=dict(parvox=int(os.environ.get('OPT_PARVOX','0')),campar=os.environ.get('OPT_CAMPAR','0')=='1',nslab=int(os.environ.get('OPT_NSLAB','3')),fit_fast=os.environ.get('OPT_FIT_FAST','0')=='1',camthreads=int(os.environ.get('OPT_CAMTHREADS','0')),preload=os.environ.get('OPT_PRELOAD','0')=='1',route_fast=os.environ.get('OPT_ROUTE_FAST','0')=='1',dec_fast=os.environ.get('OPT_DEC_FAST','0')=='1',export_lean=os.environ.get('OPT_EXPORT_LEAN','0')=='1',campool=int(os.environ.get('OPT_CAMPOOL','0')),camshare=os.environ.get('OPT_CAMSHARE','0')=='1',camlock=os.environ.get('OPT_CAMLOCK','0')=='1',vox_min=int(os.environ.get('OPT_VOX_MIN','2048')))
 OPT['camfast']=os.environ.get('OPT_CAMFAST','0')=='1'   # exact camera speed-ups (bench/camab: refine bitwise; fit = same arithmetic, see FASTNORM)
 OPT['encpipe']=int(os.environ.get('OPT_ENCPIPE','0'))   # exact: one parvox pool of this many workers; 4096 slabs voxelised concurrently (bench/encpipe.py)
 OPT['preload_split']=os.environ.get('OPT_PRELOAD_SPLIT','0')=='1'   # estimators loaded in the main thread while Pixal3D is awaited (no camera code runs then)
@@ -72,10 +71,8 @@ PIXAL=START=='pixal3d';GIVEN=START=='given'   # given: a prepared start (SF3D_ST
 GD=os.environ.get('SF3D_START_DIR') if GIVEN else None   # e.g. the two-view start of scripts/infer_dual.sh; the input image gives the conditions only
 CAMFAST_REF=dict(CAMREF_THREADS='12',CAMREF_LOCKSTEP='1',CAMREF_FNCACHE='1',CAMREF_MEMO='1',CAMREF_GRIDBATCH='72',CAMREF_FASTNORM='1')
 CACHE=f'{_E["SF3D_TRELLIS2_WEIGHTS"]}'
-CK=f'{_E["SF3D_CKPT"]}/estimator/grey/ckpt_04000.pt'   # grey-route detail estimator
-def kv(s):return dict(x.split('=',1) for x in s.split())
-CAL=f"ROUTE=1 RGB_CKPT={_E['SF3D_CKPT']}/estimator/rgb/ckpt_last.pt COND=0 CKPT={CK} K=64 GAIN=1.55 FK=4 FG=1.2 MAXD=6 LAP=0.003 LAPH=0.05 EDGE=0.5 LEVELS=3 ALIGN=1 TTA=0 RGB_GAIN=1.5 RGB_FK=4"
-INJ=dict(MAXD='3');INJ.update(kv(CAL));INJ512=dict(INJ,K='64');INJ1=dict(INJ,K='64');FIN=dict(INJ)
+INJ={}                 # detail injection: the inject_lib defaults (the paper's figure settings) at every level
+INJ512=dict(INJ)
 OPT['malign']=os.environ.get('OPT_MALIGN','')
 if OPT['malign']:INJ512['MALIGN']=OPT['malign']   # opt-in (metric round 9/10): move the start onto the image at the 512 level (= INJ512CFG MALIGN)   # = pipeline_v3_fast.py cfg construction (INJ512CFG / INJ1024 K=64)
 T0S={2048:0.15,4096:0.05}
@@ -297,20 +294,8 @@ with stage('crop'):
 img=L.load_image(f'{D}/input_crop.png');cam=L.load_cam(f'{D}/cam_refined.json')
 _vm,_Fm=L.read_mesh(f'{D}/mesh_512.ply');v512=torch.from_numpy(_vm).float().cuda();F512=torch.from_numpy(_Fm).long().cuda()
 os.environ.update(EST_CACHE=f'{WD}/est.npz',EST_CACHE_F32='1',EST_GPU_ACC='1',EST_CTRL_CACHE='1')   # exact switches of pipeline_v3_fast
-os.environ['EST_COND_PER_LEVEL']='1'   # mesh-conditioned estimates are recomputed at every level (the estimate depends on the
-                                       # current mesh); image-only estimates are computed once and reused
-EST={}
-def inject(v,F,unit,cfg):
-    c=dict(cfg);c['UNIT']=unit
-    if True:return L.inject(v,F,img,cam,c)[:2]       # routed injection, as pipeline_v3_fast
-    q=L.parse(c)
-    if 'E' not in EST:EST['E']=hest.estimate(img,cam,img.shape[0],L.model(q['CK']),batch=8)
-    if q['SUB']:
-        from hfdetail import subdivide;v,F=subdivide.midpoint(v,F)
-    params=hf.HFParams(iters=q['IT'],maxd=q['MAXD'],lap=q['LAP'],lap_huber=q['LAPH'],levels=q['LEVELS'])
-    out=hpipe.refine(v,F,hf.Frame((0.,0.,0.),1.,q['UNIT']),cam,image=img,target=EST['E'],res=img.shape[0],mode=q['MODE'],k=q['K'],gain=q['GAIN'],
-                     params=params,fine_k=q['FK'],fine_gain=q['FG'] if q['FK'] else None,edge_tau=q['EDGE'])
-    return out,F
+def inject(v,F,unit,cfg):   # image-only estimates are computed once and reused (EST_CACHE); mesh-conditioned ones at every level
+    return L.inject(v,F,img,cam,dict(cfg,UNIT=unit))[:2]
 def encode(v,F,res,ns=1):
     import pairs;pairs.encoder().eval().requires_grad_(False)   # inference only: no backward neighbour caches
     if res==1024:c,f=latent_io.encode_direct(v.cpu(),F.cpu(),res)         # run_512.sh: enc_direct.py
@@ -388,7 +373,7 @@ else:
         finally:session.close()
         out=out.replace(out.feats*std+mean);model.cpu();gc.collect();torch.cuda.empty_cache()
         return out.coords.cpu().numpy(),out.feats.float().cpu().numpy()
-    with stage('inject1024'):v,F=inject(v,F,'1/1024',INJ1)
+    with stage('inject1024'):v,F=inject(v,F,'1/1024',INJ)
     with stage('encode2048'):c2048,f2048=encode(v,F,2048);del v,F;torch.cuda.empty_cache()
     with stage('refine2048'):z2048=refine(2048,c2048,f2048,c1024,f1024)
     with stage('decode2048'):v,F=decode(2048,*z2048)
@@ -406,7 +391,7 @@ else:
             for _m in L._MODELS.values():
                 try:_m.net.cpu()
                 except Exception:pass
-            L._MODELS.clear();EST.clear();gc.collect();torch.cuda.empty_cache()
+            L._MODELS.clear();gc.collect();torch.cuda.empty_cache()
             print('support mode: GPU allocated before encode4096 %.2f GiB'%(torch.cuda.memory_allocated()/2**30),flush=True)
         if os.environ.get('BENCH_DUMP'):np.savez(os.environ['BENCH_DUMP'],v=v.cpu().numpy(),F=F.cpu().numpy())   # debug: encode4096 input for component tests
         with stage('encode4096'):c4096,f4096=encode(v,F,4096,OPT['nslab']);del v,F;torch.cuda.empty_cache()
@@ -419,7 +404,7 @@ else:
         with stage('decode4096'):v,F=decode(4096,*z4096)
         if OPT['bilat']:
             with stage('denoise4096'):v=bil(v,F)
-        with stage('inject4096'):v,F=inject(v,F,'1/4096',FIN)
+        with stage('inject4096'):v,F=inject(v,F,'1/4096',INJ)
         with stage('export'):export(v,F,'final_4096.ply')
 torch.cuda.synchronize();total=time.time()-T0
 _ov=max([PEAKS.get(k,0) for k in OVERLAP]+[0]);PEAK[0]=max(PEAK[0],_ov+(PXPEAK.get('peak_gib') or 0))   # concurrent Pixal3D process counts toward the peak

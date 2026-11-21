@@ -1,17 +1,20 @@
-"""Shared implementation of one image-detail injection (inject.py CLI and the single-process pipeline_v3.py driver).
-cfg: dict of the inject.py environment keys (strings), e.g. {'UNIT': '1/2048', 'MAXD': '3', 'K': '64', 'GAIN': '1.1'}."""
+"""One image-detail injection (used at every level by bench/pipeline_body.py).
+cfg: dict of string settings, e.g. {'UNIT': '1/2048'}; every other key defaults to the pipeline's settings (the paper's figures):
+routed estimators (grey route: image-only estimator; textured inputs: mesh-conditioned estimator), K 64, gains 1.55 / 1.5 (RGB) /
+1.2 (fine band, K 4), flow alignment, max displacement 6 voxels, 3 height-field levels."""
 from os import environ as _E   # install locations, set by setup/env.sh (SF3D_ROOT, SF3D_CKPT, ...)
 import os,sys,time,json,numpy as np,torch
 sys.path.insert(0,f'{_E["SF3D_ROOT"]}/superfine3d/detail')
 from hfdetail import pipeline,heightfield as hf,estimator
-CKPT=f'{_E["SF3D_CKPT"]}/estimator/C_cond/ckpt_04000.pt'
+CKPT=f'{_E["SF3D_CKPT"]}/estimator/grey/ckpt_04000.pt'      # grey-route detail estimator (image only)
+RGB_CKPT=f'{_E["SF3D_CKPT"]}/estimator/rgb/ckpt_last.pt'      # mesh-conditioned detail estimator (textured inputs)
 def parse(cfg):
     E_=lambda k,d:type(d)(cfg.get(k,d));n,d=(cfg.get('UNIT','1/4096')+'/1').split('/')[:2]
     o=lambda k,f:f(cfg[k]) if cfg.get(k) else None
-    return dict(CK=cfg.get('CKPT',CKPT),UNIT=float(n)/float(d),MAXD=E_('MAXD',3.0),MODE=cfg.get('MODE','resid'),K=E_('K',32),GAIN=E_('GAIN',.9),
-                COND=E_('COND',1),IT=E_('ITERS',800),LAP=E_('LAP',.01),OUTL=o('OUTLIER',float),ORING=E_('ORINGS',1),SLOPE=o('SLOPE',float),
-                FK=o('FK',int),FG=E_('FG',.9),SUB=E_('SUBDIV',0),RES=o('RES',int),BR=o('BR',int),AMAX=E_('AMAX',2.0),ALIGN=E_('ALIGN',0),ASIG=E_('ALIGN_SIGMA',6.0),AMAXS=E_('ALIGN_MAX',96.0),LAPH=o('LAPH',float),EDGE=o('EDGE',float),LEVELS=E_('LEVELS',1),DEPTH=E_('DEPTH',0),DEPTHW=E_('DEPTHW',1.0),DEPTHF=E_('DEPTHF',32),ORIENT=E_('ORIENT',0),FOLD=o('FOLD',float),
-                AGREE=o('AGREE',float),GRAZE=o('GRAZE',float),CONF=cfg.get('CONF'),GRAZE_W=E_('GRAZE_W',0.3),GRAZE_R=E_('GRAZE_R',8),RGB_FK=o('RGB_FK',int),TTA=E_('TTA',0),ROUTE=E_('ROUTE',0),RGB_THR=E_('RGB_THR',1.0),RGB_GAIN=E_('RGB_GAIN',1.1),RGB_KPX=o('RGB_KPX',float),MIN_PPV=E_('MIN_PPV',0.5),RGB_CK=cfg.get('RGB_CKPT',CKPT))
+    return dict(CK=cfg.get('CKPT',CKPT),UNIT=float(n)/float(d),MAXD=E_('MAXD',6.0),MODE=cfg.get('MODE','resid'),K=E_('K',64),GAIN=E_('GAIN',1.55),
+                COND=E_('COND',0),IT=E_('ITERS',800),LAP=E_('LAP',.003),OUTL=o('OUTLIER',float),ORING=E_('ORINGS',1),SLOPE=o('SLOPE',float),
+                FK=E_('FK',4),FG=E_('FG',1.2),SUB=E_('SUBDIV',0),RES=o('RES',int),BR=o('BR',int),AMAX=E_('AMAX',2.0),ALIGN=E_('ALIGN',1),ASIG=E_('ALIGN_SIGMA',6.0),AMAXS=E_('ALIGN_MAX',96.0),LAPH=E_('LAPH',.05),EDGE=E_('EDGE',.5),LEVELS=E_('LEVELS',3),DEPTH=E_('DEPTH',0),DEPTHW=E_('DEPTHW',1.0),DEPTHF=E_('DEPTHF',32),ORIENT=E_('ORIENT',0),FOLD=o('FOLD',float),
+                AGREE=o('AGREE',float),GRAZE=o('GRAZE',float),CONF=cfg.get('CONF'),GRAZE_W=E_('GRAZE_W',0.3),GRAZE_R=E_('GRAZE_R',8),RGB_FK=E_('RGB_FK',4),TTA=E_('TTA',0),ROUTE=E_('ROUTE',1),RGB_THR=E_('RGB_THR',1.0),RGB_GAIN=E_('RGB_GAIN',1.5),RGB_KPX=o('RGB_KPX',float),MIN_PPV=E_('MIN_PPV',0.5),RGB_CK=cfg.get('RGB_CKPT',RGB_CKPT))
 def chroma(img):
     """Mean |channel - grey| (0-255) over the foreground; 0 for grey-model renders."""
     a=img.astype(np.float32);fg=a.max(-1)>5
@@ -22,7 +25,7 @@ def ppv(v,cam,unit,W):
     pr=lambda X:(P[:2]@np.append(X,1))/(P[2]@np.append(X,1))*W
     return float(np.linalg.norm(pr(c+unit*r)-pr(c)))
 def route(c,img,st):
-    """ROUTE=1: RGB (textured) inputs use the mesh-conditioned estimator (C_cond, COND=1), no fine pass, gain <= RGB_GAIN;
+    """ROUTE=1: RGB (textured) inputs use the mesh-conditioned estimator (RGB_CKPT, COND=1), gain <= RGB_GAIN, fine band K RGB_FK;
     RGB_KPX: residual band K scaled to the image size (K * width / RGB_KPX, min 8). Grey inputs keep the given config."""
     ch=chroma(img);st['chroma']=ch;st['route']='grey'
     if not c['ROUTE'] or ch<c['RGB_THR']:return c
@@ -57,19 +60,17 @@ def model(ck):
     return _MODELS[ck]
 _EST_ORIG=estimator.estimate
 def _est_cached(image,cam,res,model,**kw):
-    """Opt-in (env EST_CACHE=file.npz): the image normal estimate is computed once and reused by later injections of the same
-    image / camera / resolution (all levels, also across processes). With a mesh-conditioned estimator the conditioning map is the
-    one of the first call (the coarsest mesh)."""
+    """Opt-in (env EST_CACHE=file.npz): an image-only normal estimate is computed once and reused by later injections of the same
+    image / camera / resolution (all levels, also across processes; exact, it does not depend on the mesh). Mesh-conditioned
+    estimates depend on the current mesh and are cached per level."""
     import hashlib
     if os.environ.get('EST_FLATCOND')=='1' and kw.get('cond') is not None:      # opt-in: mesh-independent estimate (conditioning map = all pixels facing the camera,
         fc=torch.zeros_like(kw['cond']);fc[...,2]=1;kw=dict(kw,cond=fc)           # as the condition-dropout case in training) -> identical at every level, cacheable exactly
     path=os.environ.get('EST_CACHE')
     if not path:return _EST_ORIG(image,cam,res,model,**kw)
-    grp=''                                                            # EST_CACHE_LEVELS='512,2048': re-estimate at these levels (each estimate is reused until the next listed level)
-    if os.environ.get('EST_CACHE_LEVELS'):
-        lv=sorted(int(x) for x in os.environ['EST_CACHE_LEVELS'].split(','));cur=_EST_LEVEL[0];grp='_L%d'%max([l for l in lv if l<=cur] or [lv[0]])
+    grp=''
     key=hashlib.sha256(image[::7,::7].tobytes()+np.asarray(cam['P'],dtype=np.float64).tobytes()+str((res,sorted((k,str(x)) for k,x in kw.items() if k!='cond'))).encode()).hexdigest()[:16]
-    if os.environ.get('EST_COND_PER_LEVEL')=='1' and kw.get('cond') is not None:grp+='_C%d'%_EST_LEVEL[0]   # mesh-conditioned: per level
+    if kw.get('cond') is not None:grp+='_C%d'%_EST_LEVEL[0]          # mesh-conditioned: per level
     f=path.replace('.npz','')+'_'+key+grp+'.npz'
     if os.path.exists(f):
         a=np.load(f);return torch.from_numpy(a['E']).cuda(),torch.from_numpy(a['m']).cuda()
@@ -133,11 +134,8 @@ def inject(v,F,img,cam,cfg,keep_model=True):
     try:_EST_LEVEL[0]=int(str(cfg.get('UNIT','1/1024')).split('/')[-1])
     except Exception:_EST_LEVEL[0]=0
     c=parse(cfg);st={};c=route(c,img,st)
-    from hfdetail import targets as _tg                                # opt-in evidence gate (cfg SHRINK=deg, SHRINK_R=px); unset = unchanged
-    _tg.SHRINK=(float(cfg['SHRINK']),int(cfg.get('SHRINK_R',2))) if cfg.get('SHRINK') else None;_tg.SHRINK_STATS.clear()
-    from hfdetail import pipeline as _pl;_pl.AUTO_MIN_PASS=float(cfg['AUTO']) if cfg.get('AUTO') else None   # opt-in evidence-adaptive levels (needs SHRINK)
+    from hfdetail import pipeline as _pl
     _pl.MESH_ALIGN=dict(zip(('sigma','max_shift','ds'),(float(x) for x in cfg['MALIGN'].split(':')))) if cfg.get('MALIGN') else None   # opt-in: move the mesh onto the image
-    _pl.EVMASK=int(cfg['EVMASK']) if cfg.get('EVMASK') else None;_tg.KEEP_S=_pl.EVMASK is not None;_tg.SHRINK_S[0]=None   # opt-in evidence-masked displacement
     if gated(c,v,cam,img,st):st.update(seconds=0.,moved=0.,skipped='image coarser than mesh');return v,F,st
     if c['SUB']:
         from hfdetail import subdivide;v,F=subdivide.midpoint(v,F)
@@ -147,7 +145,6 @@ def inject(v,F,img,cam,cfg,keep_model=True):
                         params=hf.HFParams(iters=c['IT'],maxd=c['MAXD'],lap=c['LAP'],slope=c['SLOPE'],lap_huber=c['LAPH'],levels=c['LEVELS'],depth_f=c['DEPTHF'],orient_init=bool(c['ORIENT']),fold_tau=c['FOLD'],lp_w=(float(cfg['LPW']) if cfg.get('LPW') else None),lp_k=int(cfg.get('LPK',64))),est_kw=dict(batch=8,**(dict(shifts=(0,384),flip=True) if c['TTA'] else {})),stats=st,condition=bool(c['COND']),tol_obj=(float(cfg['TOL'])/1024 if cfg.get('TOL') else 2/1024),
                         outlier_deg=c['OUTL'],outlier_rings=c['ORING'],fine_k=c['FK'],fine_gain=c['FG'] if c['FK'] else None,blend_r=c['BR'],blend_amax=c['AMAX'],align=bool(c['ALIGN']),align_kw=dict(sigma=c['ASIG'],max_shift=c['AMAXS']),edge_tau=c['EDGE'],
                         depth=moge_depth(img) if c['DEPTH'] else None,depth_w=c['DEPTHW'],agree_deg=c['AGREE'],graze=(c['GRAZE'],c['GRAZE_W'],int(c['GRAZE_R'])) if c['GRAZE'] else None,conf=tuple(float(x) for x in c['CONF'].split(',')) if c['CONF'] else None)
-    (st.update({'shrink_'+k:x for k,x in _tg.SHRINK_STATS.items()}) if _tg.SHRINK is not None else None)
     (st.update({'fold_'+k:x for k,x in hf.FOLD_STATS.items()}) if c['FOLD'] is not None else None);st['seconds']=time.time()-t;st['moved']=float(((out-v).abs().sum(1)>0).float().mean());return out,F,st
 def write_ply(path,v,F):
     vo=v.cpu().numpy().astype(np.float32);fo=F.cpu().numpy().astype(np.int32)

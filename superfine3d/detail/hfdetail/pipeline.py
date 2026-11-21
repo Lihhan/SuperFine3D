@@ -70,10 +70,6 @@ def refine(v, F, frame, cam, image=None, model=None, target=None, res=None, mode
         T, Tm = targets.blend(E, Em, M0, h0, k, gain, blend_r, blend_amax, fine_k=fine_k, fine_gain=fine_gain)
     elif mode == 'raw': T, Tm = targets.raw(E, Em)
     else: raise ValueError(mode)
-    if AUTO_MIN_PASS is not None and mode == 'resid' and targets.SHRINK_STATS.get('pass_frac') is not None \
-            and targets.SHRINK_STATS['pass_frac'] < AUTO_MIN_PASS:      # opt-in evidence-adaptive level: the image shows (almost) no detail
-        if stats is not None: stats.update(auto_skipped=1, estimate_s=t1 - t0, fit_s=0., res=res)   # above the gate's noise floor here ->
-        return v.clone()                                              # no height-field fit at this level (mesh unchanged)
     if graze is not None and mode in ('resid', 'blend'):             # opt-in: lower trust in the mesh's coarse shape where it is
         import torch.nn.functional as F_                              # grazing (steep walls / troughs, n.v < thr): blend towards the
         thr, wmin, r = graze                                          # pure image target there (weight wmin on the mesh)
@@ -113,13 +109,6 @@ def refine(v, F, frame, cam, image=None, model=None, target=None, res=None, mode
             from dataclasses import replace
             params = replace(params, reg_w=edge_weights(image, res // params.ds, edge_tau, v.device))
         out = (hf.fit_fast if fast else hf.fit_reference)(v, F, frame, P, fwd, vis, T, Tm, res, params)
-        if EVMASK is not None and mode == 'resid' and targets.SHRINK_S[0] is not None:   # opt-in: move the surface only where the image
-            import torch.nn.functional as F_                          # shows detail evidence: displacement x the gate s (box-blurred over
-            r_ = int(EVMASK); g_ = targets.SHRINK_S[0][None, None].float()   # 2r+1 px so the transition has no step), sampled at each vertex
-            if r_ > 0: g_ = F_.avg_pool2d(g_, 2 * r_ + 1, 1, r_, count_include_pad=False)
-            from . import camera as _cm; uvv, _ = _cm.project(frame.to_object(v), P); wv = F_.grid_sample(g_, (uvv * 2 - 1)[None, :, None, :], mode='bilinear', align_corners=False, padding_mode='border').view(-1)
-            out = v + wv[:, None] * (out - v)
-            if stats is not None: stats.update(evmask_mean=float(wv[vis > .5].mean()) if (vis > .5).any() else 0.)
         if outlier_deg is not None:                                   # smooth away faces that contradict the target
             from . import cleanup
             bad = cleanup.outlier_vertices(frame.to_object(out), F, P, fwd, T, Tm, res, outlier_deg)
@@ -151,8 +140,6 @@ def mesh_align(v, F, frame, cam, E, Em, X0, rr, fwd, stats=None, sigma=6., max_s
         stats.update(malign_median_px=float(np.median(n)) if n.size else 0., malign_p90_px=float(np.quantile(n, .9)) if n.size else 0.,
                      malign_moved_obj=float(dX.norm(dim=1).mean()))
     return vn
-EVMASK = None   # opt-in (inject_lib cfg EVMASK=r px): scale the fitted displacement by the blurred evidence gate (needs SHRINK)
-AUTO_MIN_PASS = None   # opt-in (inject_lib cfg AUTO=frac): skip the fit when the evidence gate passes < frac of the target pixels
 def depth_target(depth, X0, F, rast, fwd, frame, G, f=32):
     """Height-field depth target (voxels, (g,g), g = G//4): mid band of the aligned monocular depth minus the mid band of the
     current mesh depth. depth: (H,W) array/tensor on the image grid (NaN = invalid). Alignment: one scale s fitted on the
