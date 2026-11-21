@@ -1,7 +1,7 @@
 #!/bin/bash
 # Refiner training data, built with TRELLIS.2's data_toolkit (commit 75fbf01; the ObjaverseXL loader is in
 # training/trellis2_variants/data_toolkit/datasets) for the Objaverse-XL (Sketchfab) assets of training/refiner/data/:
-#   metadata -> download -> mesh dump -> dual grids 256/512/1024 -> shape latents 256/512/1024 -> 16 condition views,
+#   metadata -> download -> mesh dump -> dual grids 256/512/1024 -> shape latents 256/512/1024 -> condition view,
 # then the layout the training configs read (training/refiner/configs/train_roots.json and stage 2):
 #   $SF3D_DATA/metadata/metadata.csv  $SF3D_DATA/shape_latent_1024  $SF3D_DATA/shape_latent_512  $SF3D_DATA/renders_cond
 #   $SF3D_DATA/data256/shape_latents/shape_enc_next_dc_f16c32_fp16_256
@@ -9,6 +9,7 @@
 # downloaded by the toolkit into $SF3D_BLENDER_DIR (default $SF3D_CACHE/blender) instead of /tmp.
 # usage: training/refiner/build_data.sh [RANK WORLD_SIZE]    (after setup/prepare_trellis2_variants.sh; one GPU for the encoder)
 #        SF3D_REFINER_ASSETS=LIST.txt selects other assets (default training/refiner/data/train_10000.txt).
+#        SF3D_COND_VIEWS sets the condition views per asset (default 1, as in the data of the released refiner; toolkit default 16).
 set -euo pipefail
 R="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"; source "$R/setup/env.sh"
 RANK=${1:-0}; WS=${2:-1}; E=shape_enc_next_dc_f16c32_fp16
@@ -32,7 +33,7 @@ export HF_HUB_OFFLINE=0                                    # metadata (TRELLIS-5
 export HF_HUB_OFFLINE=1
 for r in 256 512 1024; do
   "$P" encode_shape_latent.py --root "$T" --resolution $r --enc_pretrained "$SF3D_TRELLIS2_WEIGHTS/ckpts/$E" "${A[@]}"; done
-"$P" render_cond.py ObjaverseXL --root "$T" "${A[@]}"
+"$P" render_cond.py ObjaverseXL --root "$T" --num_cond_views "${SF3D_COND_VIEWS:-1}" "${A[@]}"
 "$P" build_metadata.py ObjaverseXL --root "$T"
 ln -sfn "$T/shape_latents/${E}_1024" "$SF3D_DATA/shape_latent_1024"
 ln -sfn "$T/shape_latents/${E}_512" "$SF3D_DATA/shape_latent_512"

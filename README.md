@@ -249,7 +249,7 @@ bash scripts/infer_dual.sh $E/saint_george_view0.jpg:$E/saint_george_view0_mask.
 1. **Data.** The refiner is trained on the 10,000 Objaverse-XL (Sketchfab) assets listed in
    `training/refiner/data/train_10000.txt`; stage 2 uses the 9,900 of `train_9900.txt`. Their TRELLIS.2 latents and
    condition views are built with TRELLIS.2's `data_toolkit`: download → mesh dump → dual grids → shape latents at
-   256³/512³/1024³ → 16 condition views.
+   256³/512³/1024³ → one condition view per asset (`SF3D_COND_VIEWS` for more).
    ```bash
    source setup/env.sh
    bash setup/prepare_trellis2_variants.sh        # TRELLIS.2 fork used by the data toolkit and the trainers
