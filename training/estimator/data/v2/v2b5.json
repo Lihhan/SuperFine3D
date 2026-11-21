@@ -1,0 +1,428 @@
+[
+{
+"uid": "04d1c4c27b4447e7b02fde37a73bab3d",
+"sha256": "04d1c4c27b4447e7b02fde37a73bab3d",
+"name": "Vase Dresden Neustadt",
+"faces": 2110567,
+"score": 3,
+"license": "by",
+"tags": [
+"vase",
+"dresden",
+"sandstone",
+"sandstein",
+"barock",
+"neustadt",
+"01099"
+]
+},
+{
+"uid": "53f3a4844a9641139b852ce862bb4617",
+"sha256": "53f3a4844a9641139b852ce862bb4617",
+"name": "Stele Mit Pferdekopf 1866 Low Poly",
+"faces": 2097738,
+"score": 3,
+"license": "by",
+"tags": [
+"ornament",
+"modell",
+"gips",
+"gypsum",
+"horse",
+"pfed"
+]
+},
+{
+"uid": "b2546340cd4f4e4da1f95882329bdf40",
+"sha256": "b2546340cd4f4e4da1f95882329bdf40",
+"name": "Weibliches Idol (Hama-Typus)",
+"faces": 2000000,
+"score": 3,
+"license": "by",
+"tags": [
+"ancient",
+"ceramic",
+"statue",
+"idol"
+]
+},
+{
+"uid": "956347601e9b459ab2cab420079ad6b9",
+"sha256": "956347601e9b459ab2cab420079ad6b9",
+"name": "Engraving Cylinder",
+"faces": 1999972,
+"score": 3,
+"license": "by",
+"tags": [
+"cylinder",
+"engraving",
+"ring",
+"jewelryscanner"
+]
+},
+{
+"uid": "b1f629ca99684fecb19cbb1f8f49504b",
+"sha256": "b1f629ca99684fecb19cbb1f8f49504b",
+"name": "Stone Carving",
+"faces": 1994077,
+"score": 3,
+"license": "by",
+"tags": [
+"carving",
+"stone"
+]
+},
+{
+"uid": "9c3adb4ca75f455ca76024dc2c3b95e0",
+"sha256": "9c3adb4ca75f455ca76024dc2c3b95e0",
+"name": "Pompeii - VI.8.23 - Mosaic Fountain",
+"faces": 1943426,
+"score": 3,
+"license": "by",
+"tags": [
+"pompeii",
+"pompei",
+"fountain",
+"university",
+"missouri",
+"water",
+"mosaico",
+"mosaic"
+]
+},
+{
+"uid": "7524e6d196354eacacfac7cfc61e40e5",
+"sha256": "7524e6d196354eacacfac7cfc61e40e5",
+"name": "Wooden door and stonewall",
+"faces": 1935430,
+"score": 3,
+"license": "by",
+"tags": [
+"wooden",
+"small",
+"outdoor",
+"old",
+"gc",
+"stonewall",
+"metashape",
+"agisoft"
+]
+},
+{
+"uid": "553116b2101a418d95b371cd63d923d4",
+"sha256": "553116b2101a418d95b371cd63d923d4",
+"name": "Kildrummy St Bride Chapel, Aberdeenshire",
+"faces": 1850000,
+"score": 3,
+"license": "by-nc",
+"tags": [
+"graveyard",
+"tombstone",
+"scotland",
+"gravestone",
+"aberdeenshire",
+"graveslab",
+"st-bride",
+"kildrummy"
+]
+},
+{
+"uid": "139fcaf17d2548deae894f22141110a3",
+"sha256": "139fcaf17d2548deae894f22141110a3",
+"name": "Broken burial, Nethans St Cyrus, Aberdeenshire",
+"faces": 1850000,
+"score": 3,
+"license": "by-nc",
+"tags": [
+"graveyard",
+"tombstone",
+"scotland",
+"gravestone",
+"aberdeenshire",
+"graveslab",
+"canmore"
+]
+},
+{
+"uid": "2f71d30ef5bc49c2a81b0f21edcb6075",
+"sha256": "2f71d30ef5bc49c2a81b0f21edcb6075",
+"name": "2 Epitaphe, links Konrad von Kuehedorf († 1428)",
+"faces": 1847591,
+"score": 3,
+"license": "by",
+"tags": [
+"tombstone",
+"medieval",
+"germany",
+"epitaph",
+"bavaria",
+"grabstein",
+"photogrammetry",
+"archaeology"
+]
+},
+{
+"uid": "096a928a85e443d983305a30b3946752",
+"sha256": "096a928a85e443d983305a30b3946752",
+"name": "FBX DOOR",
+"faces": 1833100,
+"score": 3,
+"license": "by",
+"tags": [
+"renaissance-architecture",
+"door",
+"spain-heritage-photogrammetry-archaeology"
+]
+},
+{
+"uid": "c04c177aef1147eca3765b1c50bc3ec8",
+"sha256": "c04c177aef1147eca3765b1c50bc3ec8",
+"name": "Body Ornament",
+"faces": 1806494,
+"score": 3,
+"license": "by",
+"tags": [
+"armor",
+"scanning",
+"tribal",
+"africa",
+"university",
+"indianapolis",
+"jewelry",
+"manchester"
+]
+},
+{
+"uid": "4a8e78796d8342469358fb5513bccb55",
+"sha256": "4a8e78796d8342469358fb5513bccb55",
+"name": "V & A - Aston Webb Façade WW2 Damage (finished)",
+"faces": 1786020,
+"score": 3,
+"license": "by",
+"tags": [
+"ww2",
+"museum",
+"facade",
+"bombing",
+"sandstone",
+"shrapnel",
+"victoria-and-albert",
+"agisoft"
+]
+},
+{
+"uid": "4ca3462de2e24883b01fdbf7aab58743",
+"sha256": "4ca3462de2e24883b01fdbf7aab58743",
+"name": "Headstone Innerwick Kirk, East Lothian, Scotland",
+"faces": 1749999,
+"score": 3,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"scotland",
+"gravestone",
+"headstone",
+"memorial",
+"kirkyard",
+"east-lothian",
+"innerwick"
+]
+},
+{
+"uid": "5a3acfedbf654fd79f3abf1bff458f6e",
+"sha256": "5a3acfedbf654fd79f3abf1bff458f6e",
+"name": "Tranent Parish Kirk Headstone",
+"faces": 1749999,
+"score": 3,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"monument",
+"scotland",
+"gravestone",
+"memorial",
+"archaeology-3dmodel-photogrammetry",
+"east-lothian",
+"tranent"
+]
+},
+{
+"uid": "764c7a5a830a481093e3b18eef10ba32",
+"sha256": "764c7a5a830a481093e3b18eef10ba32",
+"name": "Gladsmuir Kirk memorial",
+"faces": 1742424,
+"score": 3,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"monument",
+"scotland",
+"gravestone",
+"headstone",
+"east-lothian",
+"gladsmuir"
+]
+},
+{
+"uid": "e602c217d8014f80b6f143407daa7470",
+"sha256": "e602c217d8014f80b6f143407daa7470",
+"name": "Wall fountain 1",
+"faces": 1734946,
+"score": 3,
+"license": "by-nc-sa",
+"tags": [
+"france",
+"castle",
+"fountain",
+"geology",
+"water",
+"volcanic",
+"realitycapture",
+"stone"
+]
+},
+{
+"uid": "72d50c53950e4f378322f839dcebe9b3",
+"sha256": "72d50c53950e4f378322f839dcebe9b3",
+"name": "Santa Iria's Convent Door",
+"faces": 1708009,
+"score": 3,
+"license": "by",
+"tags": [
+"portugal",
+"santa",
+"heritage",
+"patrimonio",
+"porta",
+"convento",
+"tomar",
+"iria"
+]
+},
+{
+"uid": "bb7ad11310a44021a3b7611547a81eca",
+"sha256": "bb7ad11310a44021a3b7611547a81eca",
+"name": "Carrot amphora from Traismauer (v 1.0.0)",
+"faces": 1706953,
+"score": 3,
+"license": "by",
+"tags": [
+"archeology",
+"artifact",
+"reconstruction",
+"amphoras",
+"3d-printing",
+"3d-modeling",
+"blender-3d",
+"artefact"
+]
+},
+{
+"uid": "e88eec8e329446b6a88be5b207d671aa",
+"sha256": "e88eec8e329446b6a88be5b207d671aa",
+"name": "Dirleton Churchyard Headstone, Scotland",
+"faces": 1700000,
+"score": 3,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"scotland",
+"cemetery",
+"gravestone",
+"headstone",
+"kirk",
+"greenman",
+"east-lothian"
+]
+},
+{
+"uid": "f6d0ab7614ce4f52a06577a91b246eb7",
+"sha256": "f6d0ab7614ce4f52a06577a91b246eb7",
+"name": "Memorial at Yester Parish Kirk, Gifford",
+"faces": 1700000,
+"score": 3,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"monument",
+"scotland",
+"gravestone",
+"headstone",
+"east-lothian",
+"yester",
+"gifford"
+]
+},
+{
+"uid": "29b652aacfba42ecbd05863007310859",
+"sha256": "29b652aacfba42ecbd05863007310859",
+"name": "Monument within old Byres Kirkyard, Ormiston",
+"faces": 1700000,
+"score": 3,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"monument",
+"scotland",
+"gravestone",
+"memorial",
+"archaeology-3dmodel-photogrammetry",
+"east-lothian",
+"ormiston"
+]
+},
+{
+"uid": "911930813547407d9d9182f2d6922970",
+"sha256": "911930813547407d9d9182f2d6922970",
+"name": "1668 Memorial Borthwick Kirk, Scotland",
+"faces": 1699999,
+"score": 3,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"scotland",
+"gravestone",
+"headstone",
+"memorial",
+"kirk",
+"churchyard",
+"borthwick"
+]
+},
+{
+"uid": "dd9bbda4ae7e4b458d053d77e0ea6cce",
+"sha256": "dd9bbda4ae7e4b458d053d77e0ea6cce",
+"name": "Gladsmuir Kirk memorial, East Lothian",
+"faces": 1699999,
+"score": 3,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"monument",
+"scotland",
+"gravestone",
+"headstone",
+"18th-century",
+"east-lothian",
+"gladsmuir"
+]
+},
+{
+"uid": "bf4850dd91084d62a0b27c0b1d226818",
+"sha256": "bf4850dd91084d62a0b27c0b1d226818",
+"name": "Stenton Kirk headstone",
+"faces": 1699999,
+"score": 3,
+"license": "by-nc",
+"tags": [
+"graveyard",
+"tombstone",
+"monument",
+"scotland",
+"gravestone",
+"headstone",
+"east-lothian",
+"stenton"
+]
+}
+]

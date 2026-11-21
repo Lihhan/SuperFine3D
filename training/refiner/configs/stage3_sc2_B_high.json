@@ -202,7 +202,7 @@
       },
       "max_lr_tokens": 8192,
       "lr_mode": "paired",
-      "instance_list": "${SF3D_DATA}/metadata/valid_train_10000.txt"
+      "instance_list": "${SF3D_ROOT}/training/refiner/data/train_10000.txt"
     }
   },
   "trainer": {

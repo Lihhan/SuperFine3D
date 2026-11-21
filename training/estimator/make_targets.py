@@ -8,7 +8,7 @@ from os import environ as _E   # install locations, set by setup/env.sh (SF3D_RO
 import sys,os,json,numpy as np,torch
 sys.path.insert(0,f'{_E["SF3D_ROOT"]}/superfine3d/encode');import pairs
 import nvdiffrast.torch as dr
-D=f'{_E["SF3D_DATA"]}/estimator';OUT=f'{D}/ft_nirne/targets';a_,b_=map(int,sys.argv[1].split('/'))
+D=f'{_E["SF3D_DATA"]}/estimator';OUT=f'{D}/ft_nirne/targets';a_,b_=map(int,sys.argv[1].split('/'));os.makedirs(OUT,exist_ok=True)
 glctx=dr.RasterizeCudaContext()
 def raster(v,f,P,res,near=.05,far=8.):
     h=torch.cat([v,torch.ones(len(v),1,device=v.device)],1)@torch.tensor(P,device=v.device).float().T

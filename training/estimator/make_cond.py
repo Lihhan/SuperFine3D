@@ -1,6 +1,7 @@
 """Conditioning normal maps for the mesh-conditioned estimator: the crop's LR 512 latent decoded to a mesh (crop frame,
 object X = center + v/zoom) and rendered with the view camera at 1024 px (same raster/normal code as everywhere else).
-Views: hires/{z1,train,heldout}. Output ft_nirne/cond_lr/<cid>.npz {n (1024,1024,3) f16 object frame, m bool}
+Views: hires/{z1,train}; crop latents: objaverse/crops/<split>/shape_latent_512 (pairs.py encode).
+Output ft_nirne/cond_lr/<cid>.npz {n (1024,1024,3) f16 object frame, m bool}
 usage: make_cond.py SHARD/NSHARD"""
 from os import environ as _E   # install locations, set by setup/env.sh (SF3D_ROOT, SF3D_CKPT, ...)
 import sys,os,json,numpy as np,torch
@@ -9,12 +10,11 @@ import trellis2.models as models
 from trellis2.modules.sparse import SparseTensor
 from hfdetail import camera,raster
 torch.set_grad_enabled(False)
-D=f'{_E["SF3D_DATA"]}/estimator';Z=f'{_E["SF3D_ROOT"]}/superfine3d/encode';OUT=f'{D}/ft_nirne/cond_lr';a_,b_=map(int,sys.argv[1].split('/'))
-src={'z1':'zoom_data_v2','train':'zoom_data_z2dense','heldout':'zoom_data_heldout'}
-items=[(s,c) for s in ('z1','train','heldout') for c in sorted(os.listdir(f'{D}/hires/{s}'))][a_::b_]
+D=f'{_E["SF3D_DATA"]}/estimator';Z=f'{D}/objaverse/crops';OUT=f'{D}/ft_nirne/cond_lr';a_,b_=map(int,sys.argv[1].split('/'));os.makedirs(OUT,exist_ok=True)
+items=[(s,c) for s in ('z1','train') if os.path.isdir(f'{D}/hires/{s}') for c in sorted(os.listdir(f'{D}/hires/{s}'))][a_::b_]
 dec=models.from_pretrained(pairs.CACHE+'/ckpts/shape_dec_next_dc_f16c32_fp16').eval().cuda();dec.set_resolution(512);n=0
 for s,cid in items:
-    o=f'{OUT}/{cid}.npz';lat=f'{Z}/{src[s]}/shape_latent_512/{cid}.npz'
+    o=f'{OUT}/{cid}.npz';lat=f'{Z}/{s}/shape_latent_512/{cid}.npz'
     if os.path.exists(o) or not os.path.exists(lat):continue
     cam=json.load(open(f'{D}/hires/{s}/{cid}/cam.json'))
     with np.load(lat) as a:c=np.concatenate([np.zeros((len(a['coords']),1),np.int32),a['coords']],1);m=dec(SparseTensor(torch.from_numpy(a['feats']).float().cuda(),torch.from_numpy(c).int().cuda()))[0]

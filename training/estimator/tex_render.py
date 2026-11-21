@@ -1,17 +1,19 @@
 """Driver: textured crop views (ft_nirne/tex_render_bl.py) for a list of crop ids, grouped by asset, GPUs in parallel.
-Cameras come from hires/{z1,train,heldout}/<cid>/cam.json. Output ft_nirne/tex/<cid>/view_l{0,1}.png (RGBA).
+Cameras come from hires/{z1,train,v2}/<cid>/cam.json; GLBs from objaverse_download.py. Output ft_nirne/tex/<cid>/view_l{0,1}.png (RGBA).
 usage: tex_render.py LIST.txt GPUS(e.g. 4,5,6,7) [WORKERS_PER_GPU=2]"""
 from os import environ as _E   # install locations, set by setup/env.sh (SF3D_ROOT, SF3D_CKPT, ...)
 import sys,os,json,subprocess,tempfile,time,itertools
 from concurrent.futures import ThreadPoolExecutor
-D=f'{_E["SF3D_DATA"]}/estimator';OUT=f'{D}/ft_nirne/tex'
+D=f'{_E["SF3D_DATA"]}/estimator';OUT=f'{D}/ft_nirne/tex';os.makedirs(OUT,exist_ok=True)
 BL=f'{_E["SF3D_BLENDER"]}'
 ids=open(sys.argv[1]).read().split();gpus=sys.argv[2].split(',');wpg=int(sys.argv[3]) if len(sys.argv)>3 else 2
-glb=json.load(open(f'{D}/ft_nirne/sha2glb.json'))
 import glob as _g
-for _p in _g.glob(f'{_E["SF3D_DATA"]}/estimator/objaverse/raw/glbs/*/*.glb'):glb.setdefault(os.path.basename(_p)[:-4],_p)
+glb={os.path.basename(p)[:-4]:p for p in _g.glob(f'{D}/objaverse/raw/glbs/*/*.glb')}   # Objaverse uid -> GLB
+for _s in ('z1','train'):   # z1 assets are named by the TRELLIS sha256 of the file, the others by their Objaverse uid
+    for _k,_a in json.load(open(f'{_E["SF3D_ROOT"]}/training/estimator/data/{_s}.json')).items():
+        if _a['uid'] in glb:glb[_k]=glb[_a['uid']]
 def camdir(c):
-    for s in ('z1','train','heldout','v2'):
+    for s in ('z1','train','v2'):
         if os.path.exists(f'{D}/hires/{s}/{c}/cam.json'):return f'{D}/hires/{s}/{c}'
 by={}
 for c in ids:

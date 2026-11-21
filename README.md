@@ -109,8 +109,8 @@ supplementary video.
 | `superfine3d/detail/fit_input_camera.py`, `superfine3d/detail/whole/camera_refine.py` | input-camera fit (silhouette) and appearance refinement |
 | `superfine3d/detail/fig5/pixal512_worker.py`, `superfine3d/start/cand_start.py` | Pixal3D 512³ start and its placement in the input frame |
 | `superfine3d/encode/pairs.py`, `superfine3d/detail/hfdetail/latent_io.py`, `parvox.py` | mesh → latent encoding (parallel voxelisation) |
-| `training/refiner/` | the five refiner training stages (`run_stage.sh`, `configs/`) |
-| `training/estimator/` | detail-estimator fine-tuning (`train.sh`, `ft_train.py`) and its data builders |
+| `training/refiner/` | the five refiner training stages (`run_stage.sh`, `configs/`), training data build (`build_data.sh`) and asset lists (`data/`) |
+| `training/estimator/` | detail-estimator fine-tuning (`train.sh`, `ft_train.py`), training data build (`build_data.sh`, `build_v2.sh`) and asset / crop lists (`data/`) |
 | `evaluation/` | CD-L1 / F-score / DQ (`score_geometry.py`) and image-space normal fidelity (`fid_t4k_img.py`) |
 | `setup/` | environment (`env.sh`), CUDA extension and kernel builds, TRELLIS.2 fork preparation, config rendering |
 
@@ -246,18 +246,20 @@ bash scripts/infer_dual.sh $E/saint_george_view0.jpg:$E/saint_george_view0_mask.
 
 ### Refiner
 
-1. **Data.** `SF3D_DATA` holds the TRELLIS.2-encoded latents of the training assets:
-   - `shape_latent_1024/` and `shape_latent_512/`, which are paired.
-   - `data256/` (256³ latents).
-   - `renders_cond/` (condition renders).
-   - `metadata/` (instance lists).
-
-   These are produced with TRELLIS.2's `data_toolkit`. Then prepare the fork and the starting weights:
+1. **Data.** The refiner is trained on the 10,000 Objaverse-XL (Sketchfab) assets listed in
+   `training/refiner/data/train_10000.txt`; stage 2 uses the 9,900 of `train_9900.txt`. Their TRELLIS.2 latents and
+   condition views are built with TRELLIS.2's `data_toolkit`: download → mesh dump → dual grids → shape latents at
+   256³/512³/1024³ → 16 condition views.
    ```bash
    source setup/env.sh
-   bash setup/prepare_trellis2_variants.sh        # TRELLIS.2 fork used by the trainers
+   bash setup/prepare_trellis2_variants.sh        # TRELLIS.2 fork used by the data toolkit and the trainers
+   bash training/refiner/build_data.sh            # -> $SF3D_DATA; optional RANK WORLD_SIZE to split the assets
    python setup/convert_trellis2_denoiser.py      # TRELLIS.2 1024 flow model -> checkpoints/trellis2/official_1024_denoiser.pt
    ```
+   - The script lays out `$SF3D_DATA` as the configs read it: `shape_latent_1024/`, `shape_latent_512/`, `renders_cond/`,
+     `data256/` and `metadata/`. The toolkit's working tree is `$SF3D_DATA/objaverse_sketchfab`.
+   - The toolkit downloads Blender itself; the script puts it in `$SF3D_BLENDER_DIR` (default `.cache/blender`) instead of `/tmp`.
+   - The lists contain asset IDs only; the assets are downloaded from Objaverse under their own licenses.
 2. **Stages.** Each stage starts from the previous one:
 
    | Stage | Trains | Steps |
@@ -294,10 +296,19 @@ The RGB route proceeds in steps:
 4. Add v2 relief and scan crops, with conditioning misalignment and dropout plus albedo, photometric and exposure
    augmentation.
 
-**Data** goes under `$SF3D_DATA/estimator`:
-- `training/estimator/build_v2.sh`: Objaverse download → Blender dump → crop records → grey views → GT normal targets →
-  detail filter → textured renders.
-- `make_targets.py` and `make_cond.py`: targets and coarse-normal conditions for the crop views.
+**Data** goes under `$SF3D_DATA/estimator`. The asset and crop lists are in `training/estimator/data`:
+- `z1.json`: 492 Objaverse assets with 1,734 crops (crop centre and zoom factor 2 or 4).
+- `train.json`: 18 densely scanned or sculpted assets with 332 crops.
+- `v2/v2b0.json` … `v2b7.json`: 200 relief and scan assets. Their crops are drawn per asset with a fixed seed, and a
+  detail filter keeps 1,365 views.
+
+```bash
+bash training/estimator/build_data.sh 0 1      # two GPUs; Blender 4.2 (SF3D_BLENDER); after setup/prepare_trellis2_variants.sh
+```
+
+Every crop goes through: GLB download → Blender mesh dump → crop latent → grey view at 1024 px → GT normal target →
+coarse-normal condition (z1, train) → textured, lit views. `train.sh` trains the grey model on z1 and train and adds
+v2 for the RGB model; 30 z1 assets and 12 v2 assets are held out for validation.
 
 ## Evaluation
 

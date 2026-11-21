@@ -1,0 +1,439 @@
+[
+{
+"uid": "ecb7b5a5561d43a2b7aca24cc1948c81",
+"sha256": "ecb7b5a5561d43a2b7aca24cc1948c81",
+"name": "Borre Viking - wooden carving (from depth maps)",
+"faces": 2721311,
+"score": 4,
+"license": "by-nc-sa",
+"tags": [
+"viking",
+"carving",
+"statue",
+"borre",
+"wooden-carving",
+"wood",
+"sculpture",
+"viking-art"
+]
+},
+{
+"uid": "b6e11f78728b464a9783012a87043095",
+"sha256": "b6e11f78728b464a9783012a87043095",
+"name": "Stone Sarcophagi, Cairo Museum",
+"faces": 2250318,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"egypt",
+"museum",
+"sarcophagus",
+"cairo",
+"sarcophagi"
+]
+},
+{
+"uid": "d4298830d4874d158dcfe9367246b17b",
+"sha256": "d4298830d4874d158dcfe9367246b17b",
+"name": "8th-9th Century Chip Carved Mount",
+"faces": 2013608,
+"score": 4,
+"license": "by",
+"tags": [
+"mount",
+"scotland",
+"collection",
+"scottish",
+"museum",
+"copper",
+"archeaology",
+"perth"
+]
+},
+{
+"uid": "23f5583f381e445bad713eefd00d6e88",
+"sha256": "23f5583f381e445bad713eefd00d6e88",
+"name": "Fonte Luminosa",
+"faces": 1993599,
+"score": 4,
+"license": "by",
+"tags": [
+"lisbon",
+"fountain",
+"lisboa",
+"water",
+"fountain-sculpture",
+"fountain-architecture"
+]
+},
+{
+"uid": "f0488e11653e47549663fb3a371db703",
+"sha256": "f0488e11653e47549663fb3a371db703",
+"name": "YPM ANT.057529",
+"faces": 1800000,
+"score": 4,
+"license": "by",
+"tags": [
+"vessel",
+"carving",
+"anthropology",
+"stone",
+"stone-vessel",
+"open-work-carving",
+"carving-vessel"
+]
+},
+{
+"uid": "214f6ef6ac1b4151aea8684454c63d3f",
+"sha256": "214f6ef6ac1b4151aea8684454c63d3f",
+"name": "Headstone Whittinghame Kirk, East Lothian",
+"faces": 1750000,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"scotland",
+"gravestone",
+"headstone",
+"memorial",
+"tombstone-graveyard-historical-architecture",
+"east-lothian",
+"whittinghame"
+]
+},
+{
+"uid": "9b91e1b1686a4fa391971abcccaba70e",
+"sha256": "9b91e1b1686a4fa391971abcccaba70e",
+"name": "Memorial East Saltoun Kirk 1719",
+"faces": 1750000,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"scotland",
+"gravestone",
+"headstone",
+"memorial",
+"tombstone-graveyard-historical-architecture",
+"east-lothian",
+"east-saltoun"
+]
+},
+{
+"uid": "d47daa4e014a4d579f33a2c0ffe6d42a",
+"sha256": "d47daa4e014a4d579f33a2c0ffe6d42a",
+"name": "Whittinghame Parish Kirk, East Lothian",
+"faces": 1750000,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"scotland",
+"gravestone",
+"headstone",
+"memorial",
+"tombstone-graveyard-historical-architecture",
+"east-lothian",
+"whittinghame"
+]
+},
+{
+"uid": "580256f6f46048e6ae9028789155f426",
+"sha256": "580256f6f46048e6ae9028789155f426",
+"name": "Headstone Spott Kirk, East Lothian",
+"faces": 1750000,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"scotland",
+"gravestone",
+"headstone",
+"memorial",
+"tombstone-graveyard-historical-architecture",
+"east-lothian",
+"spott"
+]
+},
+{
+"uid": "ba9a65aee97d451cabbd24c5757e99a0",
+"sha256": "ba9a65aee97d451cabbd24c5757e99a0",
+"name": "Headstone Dunbar Parish Church",
+"faces": 1749999,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"scotland",
+"gravestone",
+"headstone",
+"memorial",
+"tombstone-graveyard-historical-architecture",
+"dunbar",
+"east-lothian"
+]
+},
+{
+"uid": "fb57ae733a32487ab957927fe52849d6",
+"sha256": "fb57ae733a32487ab957927fe52849d6",
+"name": "Headstone Whittinghame Kirk, East Lothian",
+"faces": 1656261,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"scotland",
+"gravestone",
+"headstone",
+"memorial",
+"tombstone-graveyard-historical-architecture",
+"east-lothian",
+"whittinghame"
+]
+},
+{
+"uid": "dd2cc77e5bb84a05b69a317e9fd74ae3",
+"sha256": "dd2cc77e5bb84a05b69a317e9fd74ae3",
+"name": "Portal de Estella / Portal de San Nicasio  VIANA",
+"faces": 1650000,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"portal",
+"fotogrametria",
+"viana",
+"metashape",
+"photogrammetry",
+"estella",
+"sannicasio"
+]
+},
+{
+"uid": "b27cd9de92e74bec83db23f9337ee5c4",
+"sha256": "b27cd9de92e74bec83db23f9337ee5c4",
+"name": "Headstone Spott Parish Kirk, East Lothian",
+"faces": 1620656,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"scotland",
+"gravestone",
+"headstone",
+"memorial",
+"tombstone-graveyard-historical-architecture",
+"east-lothian",
+"spott"
+]
+},
+{
+"uid": "e3f8179a00d74441aa2d850d355bfe7a",
+"sha256": "e3f8179a00d74441aa2d850d355bfe7a",
+"name": "Amphora, Necropolis of Poggio Pinci, Asciano",
+"faces": 1615932,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"vase",
+"pottery",
+"heritage",
+"siena",
+"etruscan",
+"amphora",
+"tuscany",
+"gdh"
+]
+},
+{
+"uid": "a849c68913cb42afab5f3a17633e248a",
+"sha256": "a849c68913cb42afab5f3a17633e248a",
+"name": "1632 panel, Riddell Aisle, Lilliesleaf Kirkyard",
+"faces": 1600000,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"scotland",
+"gravestone",
+"headstone",
+"kirk",
+"lilliesleaf",
+"ridell"
+]
+},
+{
+"uid": "7c99a4b11cb643479eccc1905f3002c7",
+"sha256": "7c99a4b11cb643479eccc1905f3002c7",
+"name": "Sculptural fountain La Manola (2)",
+"faces": 1500000,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"spain",
+"fountain",
+"fountain-sculpture",
+"photogrammetry",
+"sculpture",
+"castilla-la-mancha",
+"ciudad-real"
+]
+},
+{
+"uid": "2cf8e774774c4ef094ae183f3ea2f884",
+"sha256": "2cf8e774774c4ef094ae183f3ea2f884",
+"name": "Sculptural fountain La Manola (1)",
+"faces": 1500000,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"spain",
+"fountain",
+"fountain-sculpture",
+"photogrammetry",
+"sculpture",
+"castilla-la-mancha",
+"ciudad-real"
+]
+},
+{
+"uid": "5b511b0c50644bb9b95569e907806e6d",
+"sha256": "5b511b0c50644bb9b95569e907806e6d",
+"name": "Moissac portal - Mullion",
+"faces": 1499468,
+"score": 4,
+"license": "by-nc-sa",
+"tags": [
+"portal",
+"3d-scan",
+"3dprintable",
+"column",
+"3d-print",
+"3d-print-ready",
+"escultura",
+"portail"
+]
+},
+{
+"uid": "f2a3395f73ef484f9630f6019fc72db4",
+"sha256": "f2a3395f73ef484f9630f6019fc72db4",
+"name": "Façade - rue de l'Etuve 53, Bruxelles (BR378)",
+"faces": 1448670,
+"score": 4,
+"license": "by",
+"tags": [
+"facade",
+"baroque",
+"contextcapture",
+"brussels",
+"buildingarchaeology",
+"photogrammetry",
+"archaeology",
+"building"
+]
+},
+{
+"uid": "417a25b83acc44b4813edd7d32e0e4c5",
+"sha256": "417a25b83acc44b4813edd7d32e0e4c5",
+"name": "Wooden bas-relief",
+"faces": 1308160,
+"score": 4,
+"license": "cc0",
+"tags": [
+"africa",
+"animals",
+"craft",
+"furniture",
+"relief",
+"everyday-objects",
+"ivory-coast",
+"everyday_life"
+]
+},
+{
+"uid": "726c7c9854444883a10581abe34d693b",
+"sha256": "726c7c9854444883a10581abe34d693b",
+"name": "Portrait in Mahogany",
+"faces": 1257268,
+"score": 4,
+"license": "by",
+"tags": [
+"face",
+"wooden",
+"scanning",
+"tribal",
+"africa",
+"library",
+"university",
+"indianapolis"
+]
+},
+{
+"uid": "82b48ec39afd45dea63f4ff094b7329f",
+"sha256": "82b48ec39afd45dea63f4ff094b7329f",
+"name": "Headstone at Whittinghame Kirk, East Lothian",
+"faces": 1223035,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"tombstone",
+"scotland",
+"gravestone",
+"headstone",
+"memorial",
+"tombstone-graveyard-historical-architecture",
+"east-lothian",
+"whittinghame"
+]
+},
+{
+"uid": "916ace24dbf741b9adbddffb060e4429",
+"sha256": "916ace24dbf741b9adbddffb060e4429",
+"name": "#SculptJanuary19 - Day26 - Ornament",
+"faces": 1101306,
+"score": 4,
+"license": "by",
+"tags": [
+"b3d",
+"vase",
+"ornament",
+"graffiti",
+"sculptjanuary19"
+]
+},
+{
+"uid": "71a6d477debb41f2851b95ba6844db10",
+"sha256": "71a6d477debb41f2851b95ba6844db10",
+"name": "Door St. Rochus Church Zirndorf",
+"faces": 1099999,
+"score": 4,
+"license": "by",
+"tags": [
+"sandstone",
+"wooden-door",
+"zirndorf",
+"photoscan",
+"photogrammetry",
+"church",
+"door",
+"wall"
+]
+},
+{
+"uid": "17691998a26f4890aaa74dd48b25460c",
+"sha256": "17691998a26f4890aaa74dd48b25460c",
+"name": "Female head from a facade of a Wertheim store",
+"faces": 1084332,
+"score": 4,
+"license": "by",
+"tags": [
+"heritage",
+"germany",
+"museum",
+"head",
+"facade",
+"berlin",
+"spoil",
+"facade-decoration"
+]
+}
+]

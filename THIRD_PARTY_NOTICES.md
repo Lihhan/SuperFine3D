@@ -4,6 +4,7 @@
 |---|---|---|
 | `training/trellis2_variants/` | modified and added files of [TRELLIS.2](https://github.com/microsoft/TRELLIS.2) (commit 75fbf01); `setup/prepare_trellis2_variants.sh` adds the unmodified upstream files | MIT (`training/trellis2_variants/LICENSE.TRELLIS.2`) |
 | `superfine3d/refiner/code/custom_models/` | derived from TRELLIS.2 model files | MIT |
+| `training/trellis2_variants/data_toolkit/datasets/ObjaverseXL.py` | adapted from `dataset_toolkits/datasets/ObjaverseXL.py` of [TRELLIS](https://github.com/microsoft/TRELLIS) | MIT |
 | `third_party/flash_attn_3d_rope_fa2/` | fork of [FlashAttention](https://github.com/Dao-AILab/flash-attention) v2.8.3 (varlen forward/backward) with fused 3D RoPE and row-indexed K/V reads, from the Pointelligence runtime | BSD-3-Clause (`LICENSE.flash-attention`, `AUTHORS.flash-attention`) for the FlashAttention parts; Apache-2.0 (`LICENSE`) for the additions |
 | `superfine3d/refiner/code/pointelligence_grid/`, `training/trellis2_variants/trellis2/third_party/pointelligence/` | Pointelligence grid attention and RoPE kernels | Apache-2.0 |
 | `superfine3d/detail/hfdetail/estimator.py`, `training/estimator/ft_train.py` | use the NiRNE pipeline of [StableNormal](https://github.com/Stable-X/StableNormal) and the `Stable-X/yoso-normal-v1-8-1` weights (not included) | see upstream |

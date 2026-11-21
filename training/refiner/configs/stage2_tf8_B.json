@@ -199,7 +199,7 @@
       },
       "max_lr_tokens": 8192,
       "lr_mode": "paired",
-      "instance_list": "${SF3D_DATA}/mapping/mapping_train.txt"
+      "instance_list": "${SF3D_ROOT}/training/refiner/data/train_9900.txt"
     }
   },
   "trainer": {

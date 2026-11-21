@@ -1,0 +1,428 @@
+[
+{
+"uid": "63652bb50070436186207c09995a9f43",
+"sha256": "63652bb50070436186207c09995a9f43",
+"name": "Wood Carved Chair",
+"faces": 1076572,
+"score": 4,
+"license": "by",
+"tags": [
+"tree",
+"wooden",
+"scanning",
+"university",
+"indianapolis",
+"carve",
+"garage",
+"comfortable"
+]
+},
+{
+"uid": "4ce456342c674cea85ee619e0f335069",
+"sha256": "4ce456342c674cea85ee619e0f335069",
+"name": "Carved bone elephant",
+"faces": 1000000,
+"score": 4,
+"license": "by",
+"tags": [
+"elephant",
+"bone",
+"ireland",
+"heritage",
+"carving",
+"museum",
+"nature",
+"plaque"
+]
+},
+{
+"uid": "98a5ae4526f5415a85bec647b9e60552",
+"sha256": "98a5ae4526f5415a85bec647b9e60552",
+"name": "Buddist carved panel",
+"faces": 1000000,
+"score": 4,
+"license": "by-nc-sa",
+"tags": [
+"carving",
+"budda",
+"agisoft",
+"photoscan"
+]
+},
+{
+"uid": "58f45f3d979a4fd3918b1d207ad1839b",
+"sha256": "58f45f3d979a4fd3918b1d207ad1839b",
+"name": "Figure of St Peter",
+"faces": 1000000,
+"score": 4,
+"license": "by",
+"tags": [
+"medieval",
+"ireland",
+"saint",
+"ivory",
+"heritage",
+"carving",
+"museum",
+"religion"
+]
+},
+{
+"uid": "ae00185b735340d5b30bc15338ddd291",
+"sha256": "ae00185b735340d5b30bc15338ddd291",
+"name": "Roman-Catholic Cathedral_St.Michael with censer",
+"faces": 1000000,
+"score": 4,
+"license": "by",
+"tags": [
+"cathedral",
+"michael",
+"bas-relief",
+"romania",
+"saber",
+"romanic",
+"transylvania",
+"censer"
+]
+},
+{
+"uid": "c782ef3585f04694b22fa28438a2065b",
+"sha256": "c782ef3585f04694b22fa28438a2065b",
+"name": "Moving Large Vessels, Mastaba of Kagemni",
+"faces": 999999,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"egypt",
+"grave",
+"relief",
+"ancient-egypt",
+"saqqara",
+"kagemni",
+"relief-carving",
+"mastaba"
+]
+},
+{
+"uid": "941074aa16ef4b73bc9b2b3f7457f56f",
+"sha256": "941074aa16ef4b73bc9b2b3f7457f56f",
+"name": "Carved Seminole Woman",
+"faces": 999710,
+"score": 4,
+"license": "by",
+"tags": [
+"woodworking",
+"historical",
+"carving",
+"florida",
+"carved",
+"nativeamerican",
+"tourism",
+"native-american"
+]
+},
+{
+"uid": "05bf0d68abb24c5e867bbf0ede44af19",
+"sha256": "05bf0d68abb24c5e867bbf0ede44af19",
+"name": "Door at St Michael's Church, Minehead",
+"faces": 996390,
+"score": 4,
+"license": "by",
+"tags": [
+"historic",
+"medieval",
+"heritage",
+"culture",
+"gravestone",
+"grave",
+"christianity",
+"heritage-photogrammetry"
+]
+},
+{
+"uid": "7461e34dafae4a27b69130dc425b24df",
+"sha256": "7461e34dafae4a27b69130dc425b24df",
+"name": "Carved Stone Lintel, Arcidosso",
+"faces": 995549,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"lintel",
+"realitycapture",
+"photogrammetry",
+"arcidosso"
+]
+},
+{
+"uid": "bfe43faf0179456090a880c28c33deec",
+"sha256": "bfe43faf0179456090a880c28c33deec",
+"name": "101.DB.21 Athena Pergamon Altar",
+"faces": 988656,
+"score": 4,
+"license": "by-nc-sa",
+"tags": [
+"frame",
+"ancient",
+"3dprintable",
+"3d-print",
+"marble",
+"giant",
+"nike",
+"altar"
+]
+},
+{
+"uid": "53a0ab8945ae460f99b017990b0ad559",
+"sha256": "53a0ab8945ae460f99b017990b0ad559",
+"name": "Gigantomachy frieze, Delphi",
+"faces": 943227,
+"score": 4,
+"license": "by",
+"tags": [
+"greece",
+"marble",
+"relief",
+"mythology",
+"frieze",
+"delphi",
+"ancient-greece",
+"gigantomachy"
+]
+},
+{
+"uid": "4bb402c6134d490bbafac1b547347867",
+"sha256": "4bb402c6134d490bbafac1b547347867",
+"name": "Medusa fountain",
+"faces": 888934,
+"score": 4,
+"license": "by",
+"tags": [
+"fountain",
+"3d-scan",
+"photogrametry",
+"medusa",
+"water",
+"frankfurt",
+"fountain-sculpture",
+"metashape"
+]
+},
+{
+"uid": "967fac3de73c4f51899faadd26ac299e",
+"sha256": "967fac3de73c4f51899faadd26ac299e",
+"name": "St Andrews Sarcophagus Panel",
+"faces": 855665,
+"score": 4,
+"license": "by",
+"tags": [
+"gravestone",
+"photoscan"
+]
+},
+{
+"uid": "93df00a88ed543f6a5d9d61ca2a4f95b",
+"sha256": "93df00a88ed543f6a5d9d61ca2a4f95b",
+"name": "Retable of passion",
+"faces": 853857,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"cross",
+"paint",
+"mass",
+"altar",
+"christ",
+"jesus",
+"relief",
+"christian"
+]
+},
+{
+"uid": "4ac6b416e6934b4089529d69d2c637f8",
+"sha256": "4ac6b416e6934b4089529d69d2c637f8",
+"name": "Carved Stone Lintel, Arcidosso",
+"faces": 837605,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"medieval",
+"lintel",
+"tuscany",
+"realitycapture",
+"photogrammetry",
+"arcidosso"
+]
+},
+{
+"uid": "a845e6bf398e462b8372f2e7d2356899",
+"sha256": "a845e6bf398e462b8372f2e7d2356899",
+"name": "Medieval Door, Aldobrandeschi Castle. Arcidosso",
+"faces": 806778,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"lintel",
+"realitycapture",
+"photogrammetry",
+"door",
+"arcidosso"
+]
+},
+{
+"uid": "ed6a2a68b9114f8e993a6f52f17d3b37",
+"sha256": "ed6a2a68b9114f8e993a6f52f17d3b37",
+"name": "Mask",
+"faces": 766244,
+"score": 4,
+"license": "by",
+"tags": [
+"beast",
+"historic",
+"scanning",
+"toy",
+"africa",
+"small",
+"figure",
+"university"
+]
+},
+{
+"uid": "0d2c6b618adc49c48cc81d46ab3ea6a0",
+"sha256": "0d2c6b618adc49c48cc81d46ab3ea6a0",
+"name": "Altarpiece with the Kinship of Saint Anne",
+"faces": 726916,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"paint",
+"trinity",
+"carving",
+"family",
+"anna",
+"3dscanning",
+"altar",
+"jesus"
+]
+},
+{
+"uid": "92dfb5c4d768430090f1abe88a11d9af",
+"sha256": "92dfb5c4d768430090f1abe88a11d9af",
+"name": "Assumpció de Cóll church. Vall de Boí, 1140.",
+"faces": 699978,
+"score": 4,
+"license": "by",
+"tags": [
+"archeology",
+"column",
+"arch",
+"facade",
+"romanesque",
+"catalonia",
+"capitals",
+"architecture"
+]
+},
+{
+"uid": "ee49ae6dddcd4537ab8de5d0abe95082",
+"sha256": "ee49ae6dddcd4537ab8de5d0abe95082",
+"name": "Church Door Low Res",
+"faces": 666881,
+"score": 4,
+"license": "by",
+"tags": [
+"iphone",
+"facade",
+"church",
+"door",
+"iphone12",
+"iphone12pro",
+"iphone12promax"
+]
+},
+{
+"uid": "e98cae779b16409a8be194ed6ce9baae",
+"sha256": "e98cae779b16409a8be194ed6ce9baae",
+"name": "Clober House - Carved Stone",
+"faces": 641708,
+"score": 4,
+"license": "by",
+"tags": [
+"scotland",
+"iron-age",
+"east-dunbartonshire",
+"archaeology",
+"3df-zephyr",
+"prehistoric",
+"milngavie",
+"burncrooks"
+]
+},
+{
+"uid": "fbb64a0ef75d4064aba307d31b36eca4",
+"sha256": "fbb64a0ef75d4064aba307d31b36eca4",
+"name": "Amphora, Necropolis of Poggio Pinci, Asciano",
+"faces": 630384,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"vase",
+"pottery",
+"heritage",
+"siena",
+"etruscan",
+"amphora",
+"tuscany",
+"gdh"
+]
+},
+{
+"uid": "54f1d71bf1da47c089491a5a6108123b",
+"sha256": "54f1d71bf1da47c089491a5a6108123b",
+"name": "Byzantine Lintel",
+"faces": 623819,
+"score": 4,
+"license": "by",
+"tags": [
+"medieval",
+"greece",
+"christian",
+"sculptgl",
+"byzantine",
+"relief-limestone",
+"relief-carving",
+"mystras"
+]
+},
+{
+"uid": "7198b22be884403292a2e6f9203f9a09",
+"sha256": "7198b22be884403292a2e6f9203f9a09",
+"name": "Epitaph",
+"faces": 604250,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"cemetery",
+"gravestone",
+"grave",
+"epitaph"
+]
+},
+{
+"uid": "598e134cbe3d469586dfbf9c58ccebf7",
+"sha256": "598e134cbe3d469586dfbf9c58ccebf7",
+"name": "Shrine of King Taharqa",
+"faces": 599999,
+"score": 4,
+"license": "by-nc",
+"tags": [
+"egypt",
+"carving",
+"shrine",
+"pharaoh",
+"religion",
+"gods",
+"nubian",
+"nubia"
+]
+}
+]
