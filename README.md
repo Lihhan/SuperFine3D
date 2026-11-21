@@ -96,10 +96,10 @@ supplementary video.
 
 | Path | Contents |
 |---|---|
-| `scripts/infer.sh` | image → mesh (`SF3D_PROFILE`: `quality` by default, `table1` for the configuration of Table 1) |
+| `scripts/infer.sh` | image → mesh |
 | `scripts/infer_dual.sh`, `superfine3d/dual/` | two photos → mesh (the paper's two-view figure) |
 | `assets/examples/` | 4096² RGBA example inputs (pangolin, nautilus); `dual/`: the two photos of the two-view figure |
-| `superfine3d/detail/bench/bench_t1_body.py` | the end-to-end pipeline (stage list in its header) |
+| `superfine3d/detail/bench/pipeline_body.py` | the end-to-end pipeline (stage list in its header) |
 | `superfine3d/refiner/code/` | refiner model (`ablation_model.py`, `structure.py`, stage packages `tf3`–`tf8`), spatial-cell attention session (`session.py`, `kernel_session.py`, `tf6_2/boundary_attention.py`), LR guidance (`custom_attention/lr_guidance.py`) |
 | `superfine3d/refiner/generate.py` | refinement driver (support construction, SDEdit sampling per level) |
 | `superfine3d/refiner/decode_code/` | low-memory decoding of 2048³/4096³ latents |
@@ -185,7 +185,7 @@ Tested with Python 3.10, CUDA 12.8 and PyTorch 2.9.0 on RTX PRO 6000 Blackwell G
    If gdown stops at Google Drive's download limit, download the folder in a browser instead and run the same check.
 8. **Locations:** edit the variables marked `set me` in `setup/env.sh`. Every script reads its locations from there.
 9. **Estimator build** (optional, recommended): `bash setup/build_estimator_aot.sh` compiles the detail-estimator networks
-   that the quality profile re-runs at every level (AOTInductor; 3–4 minutes, once per GPU and PyTorch version; each
+   that the pipeline re-runs at every level (AOTInductor; 3–4 minutes, once per GPU and PyTorch version; each
    network is checked against the eager one). Without it the same settings run with the eager networks.
 
 ## Inference
@@ -197,8 +197,6 @@ bash scripts/infer.sh assets/examples/pangolin.png outputs/pangolin
 bash scripts/infer.sh assets/examples/pangolin.png outputs/pangolin_2048 2048
 # TRELLIS.2 512^3 start
 bash scripts/infer.sh assets/examples/nautilus.png outputs/nautilus 4096 trellis2
-# the configuration of Table 1 and of the reported timings
-SF3D_PROFILE=table1 bash scripts/infer.sh assets/examples/pangolin.png outputs/pangolin_table1
 ```
 
 `assets/examples/` holds the two 4096&times;4096 inputs of the project page's 3D viewer (AI-generated images).
@@ -208,19 +206,10 @@ An input must be an RGBA image whose alpha channel masks the object. Background 
 
 | `START` | 512³ start | Notes |
 |---|---|---|
-| `pixal3d` (default) | Pixal3D native 512³ output | Placed in the TRELLIS.2 reference frame and re-fitted to the input image. Runs concurrently with the reference frame. This is the configuration of Table 1. |
+| `pixal3d` (default) | Pixal3D native 512³ output | Placed in the TRELLIS.2 reference frame and re-fitted to the input image. Runs concurrently with the reference frame. |
 | `trellis2` | the TRELLIS.2 512³ shape of the reference frame, with its fitted camera | Pixal3D is not run and does not need to be installed. |
 
 Everything after the start is identical for both: detail injection, encodes, recursive refinement, decoding and export.
-
-**Detail-injection profile.** Set `SF3D_PROFILE`:
-
-| `SF3D_PROFILE` | Detail injection | Time, pangolin example |
-|---|---|---|
-| `quality` (default) | The settings of the paper's figures: injection gains 1.55 / 1.5 / 1.2, all detail bands, no evidence gate, flow alignment, and the mesh-conditioned detail estimate recomputed at every level (no test-time augmentation). | 418 s (about 1.2× `table1`) |
-| `table1` | The configuration of Table 1 and of the reported timings: gains 1.0, bands 32 / 16, evidence gate, estimate computed once. | 347 s (310 s on an idle node) |
-
-Times are end to end on one RTX PRO 6000 Blackwell (4096² input, 4096³ output, `report.json`), measured back to back on a shared node with the estimator build of step 9.
 
 ### Two photos
 
@@ -250,7 +239,7 @@ bash scripts/infer_dual.sh $E/saint_george_view0.jpg:$E/saint_george_view0_mask.
   5. Inject → encode 4096³ → refine → decode.
   6. Final band-limited injection and hole capping.
 - **Exactness:** the `OPT_*` speed switches set by `scripts/infer.sh` give the same output as the reference path.
-  `FUSED=0` falls back to the unfused DiT. The quality profile's estimator acceleration (cuDNN autotuning, AOTInductor
+  `FUSED=0` falls back to the unfused DiT. The estimator acceleration (cuDNN autotuning, AOTInductor
   networks) changes the estimate only at fp16 rounding level.
 
 ## Training

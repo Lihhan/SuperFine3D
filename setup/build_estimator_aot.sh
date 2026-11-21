@@ -1,5 +1,5 @@
 #!/bin/bash
-# Optional speed-up of the quality profile: AOTInductor builds of the detail-estimator networks that are re-run at every level
+# Optional speed-up of the pipeline: AOTInductor builds of the detail-estimator networks that are re-run at every level
 # (about 3-4 minutes once; GPU- and torch-version specific). Without them the pipeline uses the eager networks (same settings).
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/env.sh"

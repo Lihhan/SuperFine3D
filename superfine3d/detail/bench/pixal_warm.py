@@ -1,4 +1,4 @@
-"""Warm Pixal3D 512 process for bench_t1 (OPT_PXWARM=1). Started before the timed window, it imports what fig5/pixal512_worker.py
+"""Warm Pixal3D 512 process for pipeline.py (OPT_PXWARM=1). Started before the timed window, it imports what fig5/pixal512_worker.py
 and the official inference code import (interpreter start-up and imports are outside the timed window, as for the main process),
 writes OUT/pixal_ready, and waits for one line on stdin. Then it runs the unchanged worker (runpy; model loads, MoGe camera,
 sampling and decoding are all inside the timed window), records OUT/peak.json and marks OUT/pixal_done (OUT/pixal_failed on error).

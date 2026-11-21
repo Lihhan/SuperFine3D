@@ -129,7 +129,7 @@ class NiRNE:
             for k, mdl in (('unet', self.pipe.unet), ('controlnet', self.pipe.controlnet)):
                 if k in sd: mdl.load_state_dict({a: b.half() for a, b in sd[k].items()})
         self.ckpt = ckpt
-        if os.environ.get('EST_CUDNN') == '1': torch.backends.cudnn.benchmark = True   # quality profile: autotuned convolutions
+        if os.environ.get('EST_CUDNN') == '1': torch.backends.cudnn.benchmark = True   # set by the pipeline: autotuned convolutions
     @torch.no_grad()
     def __call__(self, tiles, conds=None):
         """The YOSONormalsPipeline.__call__ steps (preprocess, VAE encode, controlnet + UNet at t_start, decode, unpad,

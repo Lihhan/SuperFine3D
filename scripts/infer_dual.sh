@@ -8,8 +8,8 @@
 #   RES      4096 (default) | 2048 | 1024
 # Steps: 1 single-view Pixal3D 512 on VIEW0 (defines the world)  2 PnP of VIEW0 in that world  3 MASt3R dense matches
 #   4 rectified views with the true focal, relative pose from the essential matrix  5 Pixal3D multi-view 512 start (seed 42)
-#   6 exact camera of VIEW0 in the multi-view world (no fit)  7 scripts/infer.sh with that start (SF3D_START=given, quality
-#   profile by default). -> OUT_DIR/final_RES.ply; intermediate files in OUT_DIR/dual/
+#   6 exact camera of VIEW0 in the multi-view world (no fit)  7 scripts/infer.sh with that start (SF3D_START=given).
+#   -> OUT_DIR/final_RES.ply; intermediate files in OUT_DIR/dual/
 set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/setup/env.sh"
 OUT=$(realpath -m "$3"); FT=${4:-}; RES=${5:-4096}; W=$OUT/dual; mkdir -p "$W"; DU=$SF3D_ROOT/superfine3d/dual

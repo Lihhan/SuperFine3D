@@ -1,4 +1,4 @@
-"""AOTInductor packages of the detail-estimator networks that run at every level of the quality profile (the mesh-conditioned
+"""AOTInductor packages of the detail-estimator networks that the pipeline runs at every level (the mesh-conditioned
 re-estimation): condition VAE encode, UNet at t_start (with the cached ControlNet residuals), VAE decode. Static batch 8, tile
 768 px, weights of the mesh-conditioned (RGB) estimator baked in. Each package is checked against the eager network.
 Writes $SF3D_CACHE/aoti/{enc,unet,dec}.pt2 and meta.json (GPU name, torch version, checkpoint fingerprint); the pipeline uses

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Pixal3D 512 + its image-only camera, exactly start.sh's pixal512_M + pixal512_M_cam steps (same scripts and thread settings),
-# run as one background chain by bench_t1 so that it overlaps the TRELLIS.2 reference frame and its camera fit.
+# run as one background chain by pipeline.py so that it overlaps the TRELLIS.2 reference frame and its camera fit.
 # usage: pixal_chain.sh INPUT OUT   -> OUT/{mesh_512_native.ply, zup/mesh_512.ply, zup/cam_fit.json, zup/cam_refined.json, chain_times.json}
 INP=$1;O=$2;P=${SF3D_ROOT}/superfine3d/detail;TF=${SF3D_ROOT}/setup/python.sh;ULTRA=${SF3D_PYTHON}
 PXV=${SF3D_PIXAL3D_PYTHON};mkdir -p $O/zup

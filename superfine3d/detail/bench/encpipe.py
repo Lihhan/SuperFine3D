@@ -1,4 +1,4 @@
-"""Exact pipelined hfdetail.latent_io.encode_slabs for bench_t1 (OPT_ENCPIPE=1). Same slabs, same selected faces and the same
+"""Exact pipelined hfdetail.latent_io.encode_slabs for pipeline.py (OPT_ENCPIPE=1). Same slabs, same selected faces and the same
 per-slab encode_direct calls as encode_slabs; only the scheduling changes: every slab's voxelisation is submitted at once to one
 parvox pool (POOL workers, NPROC tasks per slab, exactly the tasks of the synchronous call), and each slab's encoder pass starts
 as soon as its voxels are ready, overlapping the remaining voxelisations. The voxeliser hook (bench _Conv) returns PRE[0] when set.

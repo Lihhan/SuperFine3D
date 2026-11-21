@@ -35,7 +35,7 @@ FOV=float(os.environ.get('PIXAL_FOV','-1'))   # opt-in: known input FOV in degre
 if FOV>0:(O/'official_camera.json').write_text(json.dumps(dict(manual_fov_deg=FOV),indent=2))
 try:api.run_inference(IMG,str(O/'unused.glb'),seed=int(os.environ.get('SEED','42')),model_path=str(base/'weights'),low_vram=not FAST,resolution=1024,**(dict(manual_fov=__import__('math').radians(FOV)) if FOV>0 else {}))
 except Done:pass
-z=cap['z'];LEAN=os.environ.get('PIXAL_LEAN')=='1'   # opt-in (bench_t1): no latent / native-mesh copies; the Z-up mesh that the camera fit and
+z=cap['z'];LEAN=os.environ.get('PIXAL_LEAN')=='1'   # opt-in (pipeline.py): no latent / native-mesh copies; the Z-up mesh that the camera fit and
 if not LEAN:np.savez_compressed(O/'latent_512.npz',coords=z.coords.cpu().numpy(),feats=z.feats.float().cpu().numpy())   # placement read is
 m=cap['p'].decode_shape_slat(z,512)[0][0];v=m.vertices.cpu().numpy();f=m.faces.cpu().numpy()   # written from memory (byte-identical to
 if not LEAN:trimesh.Trimesh(v,f,process=False).export(O/'mesh_512_native.ply')                 # bench/pixal_peak.py's conversion of the copy)

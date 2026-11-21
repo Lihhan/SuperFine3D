@@ -1,4 +1,4 @@
-"""Warm camera driver of the Pixal3D chain for bench_t1 (OPT_PXWARM=1). Started before the timed window under the refine
+"""Warm camera driver of the Pixal3D chain for pipeline.py (OPT_PXWARM=1). Started before the timed window under the refine
 environment (bash setup/python.sh cam_warm.py OUT; same interpreter and numpy/scipy/trimesh/PIL as the fit's environment),
 it imports the camera scripts' modules, writes OUT/cam_ready and waits for one line on stdin (the start of the timed window).
 Then it waits for OUT/pixal_done and runs fit_input_camera.py and whole/camera_refine.py in this process (runpy, the unchanged

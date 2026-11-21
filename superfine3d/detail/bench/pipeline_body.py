@@ -1,18 +1,15 @@
 """SuperFine3D end-to-end pipeline (image -> 1024^3 / 2048^3 / 4096^3 mesh).
-Detail-injection profile, chosen with SF3D_PROFILE:
-  quality  (default) the injection settings of the paper's figures without test-time augmentation: gains 1.55 / 1.5 / 1.2,
-           all bands (K 64), no evidence gate (SHRINK), flow alignment, and the mesh-conditioned detail estimate recomputed
-           at every level; estimator accelerated with cuDNN autotuning and, if built, AOTInductor networks
-  table1   the configuration of Table 1 and of the timings (gains 1.0, K 32/16, SHRINK 8/16, no alignment, estimate once)
+Detail injection (the settings of the paper's figures): gains 1.55 / 1.5 / 1.2, all bands (K 64), flow alignment; the
+mesh-conditioned detail estimate is recomputed at every level, the image-only estimate is computed once; the estimator runs
+with cuDNN autotuning and, if built (setup/build_estimator_aot.sh), AOTInductor networks.
 512^3 start, chosen with SF3D_START:
-  pixal3d  (default, Table 1) Pixal3D native 512 output, placed in the TRELLIS.2 reference frame and re-fitted to the input
+  pixal3d  (default) Pixal3D native 512 output, placed in the TRELLIS.2 reference frame and re-fitted to the input
   trellis2 the TRELLIS.2 512 shape of the reference frame itself (with its fitted camera); Pixal3D is not run
 Everything after the start (injection, encodes, refinement, decoding, export) is the same for both starts.
-Original header: end-to-end benchmark of the Table-1 configuration (Pixal3D-512 start, T1 injection settings), derived from
-bench_v3_body.py. Pixal3D 512 runs in its own environment as a concurrent subprocess (started at T0, overlapping the
+Derived from bench_v3_body.py. Pixal3D 512 runs in its own environment as a concurrent subprocess (started at T0, overlapping the
 TRELLIS.2 reference frame and its camera fit) together with its own camera fit (bench/pixal_chain.sh = start.sh pixal512_M +
-pixal512_M_cam); the placed start's camera is fitted and refined as start.sh cam_M; injection = arms/T1.sh (route,
-evidence gate, per-level K, estimate computed once, EST_CACHE); SDEdit t0 0.15 at 2048 and 0.05 at 4096.
+pixal512_M_cam); the placed start's camera is fitted and refined as start.sh cam_M; SDEdit t0 0.15 at
+2048 and 0.05 at 4096.
 Original header (bench_v3_body.py): End-to-end benchmark of the image-guided pipeline in ONE process (protocol of the paper's Table 2: image -> exported mesh,
 includes model loads, transfers and IO; excludes interpreter start and imports; synchronized stage boundaries; peak
 allocated GPU memory over the whole run; a foreign process on the GPU invalidates the trial).
@@ -36,7 +33,7 @@ Optimisation switches (env, default off = round 0, faithful to pipeline_v3):
   OPT_CAMPOOL=n    camera Powell starts in n pre-started worker processes, combined by the scripts' own selection (campool.py)
   OPT_CAMSHARE=1   with CAMPOOL: grid searches computed once and shared; cached face normals; memoised repeated evaluations
   OPT_CAMLOCK=1    camera refinement in this process: 12 Powell threads rasterized together per step (one batched call)
-usage: bench_t1.py INPUT_PNG TARGET OUT_JSON WORKDIR   (env SF3D_START=pixal3d|trellis2)"""
+usage: pipeline.py INPUT_PNG TARGET OUT_JSON WORKDIR   (env SF3D_START=pixal3d|trellis2)"""
 from os import environ as _E   # install locations, set by setup/env.sh (SF3D_ROOT, SF3D_CKPT, ...)
 import os,sys,time,json,subprocess,shutil,runpy,types,gc,inspect,textwrap
 T_START=time.time()
@@ -69,7 +66,7 @@ OPT['bilat']=os.environ.get('OPT_BILAT','')   # 'iters:sigma_deg:v_iters': decod
 OPT['bilat_ec']=os.environ.get('OPT_BILAT_EC')=='1'
 OPT['bilat_dec4096']=os.environ.get('OPT_BILAT_MODE')=='dec4096'   # opt-in: no filtering at 2048 (the 4096 encode gets the unfiltered 2048 mesh), = pipeline DEC4096_BILAT + FINAL_BILAT   # diagnostic: release the CUDA cache after each bilateral call (no numeric change)
 OPT['noinit']=os.environ.get('OPT_NOINIT','0')=='1'     # exact: models built without random init, every parameter from the checkpoint (bench/noinit.py)
-START=os.environ.get('SF3D_START','pixal3d').lower().replace('.','').replace('-','').replace('_','')   # 512^3 start: pixal3d (Table 1) | trellis2
+START=os.environ.get('SF3D_START','pixal3d').lower().replace('.','').replace('-','').replace('_','')   # 512^3 start: pixal3d | trellis2
 assert START in ('pixal3d','trellis2','given'),f'SF3D_START must be pixal3d, trellis2 or given, not {START!r}'
 PIXAL=START=='pixal3d';GIVEN=START=='given'   # given: a prepared start (SF3D_START_DIR: mesh_512.ply, cam_fit.json, cam_refined.json, input.png),
 GD=os.environ.get('SF3D_START_DIR') if GIVEN else None   # e.g. the two-view start of scripts/infer_dual.sh; the input image gives the conditions only
@@ -78,11 +75,7 @@ CACHE=f'{_E["SF3D_TRELLIS2_WEIGHTS"]}'
 CK=f'{_E["SF3D_CKPT"]}/estimator/grey/ckpt_04000.pt'   # grey-route detail estimator
 def kv(s):return dict(x.split('=',1) for x in s.split())
 CAL=f"ROUTE=1 RGB_CKPT={_E['SF3D_CKPT']}/estimator/rgb/ckpt_last.pt COND=0 CKPT={CK} K=64 GAIN=1.55 FK=4 FG=1.2 MAXD=6 LAP=0.003 LAPH=0.05 EDGE=0.5 LEVELS=3 ALIGN=1 TTA=0 RGB_GAIN=1.5 RGB_FK=4"
-PROFILE=os.environ.get('SF3D_PROFILE','quality').lower()      # detail-injection profile: quality (default) | table1
-assert PROFILE in ('quality','table1'),PROFILE
-if PROFILE=='table1':X=' GAIN=1.0 RGB_GAIN=1.0 FG=1.0 SHRINK=8 SHRINK_R=2 K=32 ALIGN=0';XF=' K=16 SHRINK=16'   # arms/T1.sh: Table 1
-else:X='';XF=''      # quality: the figure settings (gains 1.55/1.5/1.2, all bands, no evidence gate, flow alignment), no TTA
-INJ=dict(MAXD='3');INJ.update(kv(CAL+X));INJ512=dict(INJ,K='64');INJ1=dict(INJ,K='64');FIN=dict(INJ);FIN.update(kv(XF))
+INJ=dict(MAXD='3');INJ.update(kv(CAL));INJ512=dict(INJ,K='64');INJ1=dict(INJ,K='64');FIN=dict(INJ)
 OPT['malign']=os.environ.get('OPT_MALIGN','')
 if OPT['malign']:INJ512['MALIGN']=OPT['malign']   # opt-in (metric round 9/10): move the start onto the image at the 512 level (= INJ512CFG MALIGN)   # = pipeline_v3_fast.py cfg construction (INJ512CFG / INJ1024 K=64)
 T0S={2048:0.15,4096:0.05}
@@ -207,10 +200,9 @@ def runscript(path,argv,env=None):
     try:runpy.run_path(path,run_name='__main__')
     except SystemExit:pass
     finally:sys.argv=old
-if PROFILE=='quality':
-    os.environ['EST_CUDNN']='1'                               # cuDNN autotuned convolutions in the estimator (fp16 rounding-level changes)
-    _ad=f'{_E["SF3D_CACHE"]}/aoti'                            # AOTInductor estimator networks (setup/build_estimator_aot.sh), if built
-    if os.path.exists(f'{_ad}/meta.json') and os.environ.get('SF3D_EST_AOT','1')=='1':os.environ['EST_AOTI']=_ad
+os.environ['EST_CUDNN']='1'                                   # cuDNN autotuned convolutions in the estimator (fp16 rounding-level changes)
+_ad=f'{_E["SF3D_CACHE"]}/aoti'                                # AOTInductor estimator networks (setup/build_estimator_aot.sh), if built
+if os.path.exists(f'{_ad}/meta.json') and os.environ.get('SF3D_EST_AOT','1')=='1':os.environ['EST_AOTI']=_ad
 PRELOADED={}
 def preload_nirne():                # the detail estimators (diffusers): loading toggles the process-wide torch default dtype (fp16), so it
     q_=L.parse(dict(INJ512,UNIT='1/512'));L.model(q_['CK']);L.model(q_['RGB_CK'])   # must never overlap camera code of this process
@@ -304,13 +296,13 @@ with stage('crop'):
     runscript(f'{P}/relief24/crop_input.py',[D])
 img=L.load_image(f'{D}/input_crop.png');cam=L.load_cam(f'{D}/cam_refined.json')
 _vm,_Fm=L.read_mesh(f'{D}/mesh_512.ply');v512=torch.from_numpy(_vm).float().cuda();F512=torch.from_numpy(_Fm).long().cuda()
-os.environ.update(EST_CACHE=f'{WD}/est.npz',EST_CACHE_F32='1',EST_GPU_ACC='1',EST_CTRL_CACHE='1')   # arms/T1.sh + pipeline_v3_fast exact switches
-if PROFILE=='quality':os.environ['EST_COND_PER_LEVEL']='1'   # mesh-conditioned estimates are recomputed at every level (the estimate
-                                                          # depends on the current mesh); image-only estimates are reused
+os.environ.update(EST_CACHE=f'{WD}/est.npz',EST_CACHE_F32='1',EST_GPU_ACC='1',EST_CTRL_CACHE='1')   # exact switches of pipeline_v3_fast
+os.environ['EST_COND_PER_LEVEL']='1'   # mesh-conditioned estimates are recomputed at every level (the estimate depends on the
+                                       # current mesh); image-only estimates are computed once and reused
 EST={}
 def inject(v,F,unit,cfg):
     c=dict(cfg);c['UNIT']=unit
-    if True:return L.inject(v,F,img,cam,c)[:2]       # T1: route + evidence gate + EST_CACHE (estimate once), as pipeline_v3_fast
+    if True:return L.inject(v,F,img,cam,c)[:2]       # routed injection, as pipeline_v3_fast
     q=L.parse(c)
     if 'E' not in EST:EST['E']=hest.estimate(img,cam,img.shape[0],L.model(q['CK']),batch=8)
     if q['SUB']:
@@ -431,7 +423,7 @@ else:
         with stage('export'):export(v,F,'final_4096.ply')
 torch.cuda.synchronize();total=time.time()-T0
 _ov=max([PEAKS.get(k,0) for k in OVERLAP]+[0]);PEAK[0]=max(PEAK[0],_ov+(PXPEAK.get('peak_gib') or 0))   # concurrent Pixal3D process counts toward the peak
-rep=dict(config=(f'Table-1 configuration, {START} 512 start' if PROFILE=='table1' else f'quality profile, {START} 512 start'),profile=PROFILE,estimator_aot=bool(os.environ.get('EST_AOTI')),start=START,pixal3d=PXPEAK,overlap_stages=OVERLAP,target=TARGET,total_seconds=round(total,2),startup_and_imports_seconds=round(T0-T_START,2),pixal_warmup_seconds=round(WARM,2),times=times,peak_allocated_gib=round(PEAK[0],3),stage_peak_gib=PEAKS,
+rep=dict(config=f'{START} 512 start',estimator_aot=bool(os.environ.get('EST_AOTI')),start=START,pixal3d=PXPEAK,overlap_stages=OVERLAP,target=TARGET,total_seconds=round(total,2),startup_and_imports_seconds=round(T0-T_START,2),pixal_warmup_seconds=round(WARM,2),times=times,peak_allocated_gib=round(PEAK[0],3),stage_peak_gib=PEAKS,
          peak_reserved_gib=round(torch.cuda.max_memory_reserved()/2**30,3),opt=OPT,input=INP,contention=marks,timing_valid=not marks,gpu_name=torch.cuda.get_device_name(0),
          gpu_shared=SHARED,foreign_pids_seen=sorted(SEEN),stage_load1=LOADS)
 json.dump(rep,open(OUTJ,'w'),indent=1);print('BENCH',json.dumps(rep),flush=True)
