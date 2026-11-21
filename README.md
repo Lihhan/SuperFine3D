@@ -97,6 +97,7 @@ supplementary video.
 | Path | Contents |
 |---|---|
 | `scripts/infer.sh` | image → mesh, Table-1 configuration |
+| `assets/examples/` | 4096² RGBA example inputs (pangolin, nautilus) |
 | `superfine3d/detail/bench/bench_t1_body.py` | the end-to-end pipeline (stage list in its header) |
 | `superfine3d/refiner/code/` | refiner model (`ablation_model.py`, `structure.py`, stage packages `tf3`–`tf8`), spatial-cell attention session (`session.py`, `kernel_session.py`, `tf6_2/boundary_attention.py`), LR guidance (`custom_attention/lr_guidance.py`) |
 | `superfine3d/refiner/generate.py` | refinement driver (support construction, SDEdit sampling per level) |
@@ -172,12 +173,16 @@ Tested with Python 3.10, CUDA 12.8 and PyTorch 2.9.0 on RTX PRO 6000 Blackwell G
 ## Inference
 
 ```bash
-bash scripts/infer.sh input.png outputs/example                  # -> outputs/example/final_4096.ply (Pixal3D start)
-bash scripts/infer.sh input.png outputs/example 2048             # 2048^3 output
-bash scripts/infer.sh input.png outputs/example 4096 trellis2    # TRELLIS.2 512^3 start
+# Pixal3D 512^3 start (Table 1) -> outputs/pangolin/final_4096.ply
+bash scripts/infer.sh assets/examples/pangolin.png outputs/pangolin
+# 2048^3 output
+bash scripts/infer.sh assets/examples/pangolin.png outputs/pangolin_2048 2048
+# TRELLIS.2 512^3 start
+bash scripts/infer.sh assets/examples/nautilus.png outputs/nautilus 4096 trellis2
 ```
 
-The input must be an RGBA image whose alpha channel masks the object. Background removal is not run.
+`assets/examples/` holds the two 4096&times;4096 inputs of the project page's 3D viewer (AI-generated images).
+An input must be an RGBA image whose alpha channel masks the object. Background removal is not run.
 
 **512³ start.** Set the fourth argument, or `SF3D_START`:
 
