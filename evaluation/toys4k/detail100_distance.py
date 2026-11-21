@@ -18,7 +18,7 @@ def sha(p):
  return h.hexdigest()
 def worker(key,method):
  import numpy as np
- sys.path.insert(0,str(R/'code'));import toys_metrics_v4 as v4
+ sys.path.insert(0,f'{_E["SF3D_ROOT"]}/evaluation/toys4k');import toys_metrics_v4 as v4
  guard=open(R/'detail50/cpu_geometry.lock','a');fcntl.flock(guard,fcntl.LOCK_EX)
  prep=json.loads((D/key/'preparation.json').read_text());s=prep['sources'][method]
  assert sha(s['path'])==s['sha256'];assert sha(R/key/'input_data/input.png')==prep['input_sha256']

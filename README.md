@@ -110,34 +110,51 @@ supplementary video.
 | `training/refiner/` | the five refiner training stages (`run_stage.sh`, `configs/`) |
 | `training/estimator/` | detail-estimator fine-tuning (`train.sh`, `ft_train.py`) and its data builders |
 | `evaluation/` | CD-L1 / F-score / DQ (`score_geometry.py`) and image-space normal fidelity (`fid_t4k_img.py`) |
-| `setup/` | environment (`env.sh`), kernel build, TRELLIS.2 fork preparation, config rendering |
+| `setup/` | environment (`env.sh`), CUDA extension and kernel builds, TRELLIS.2 fork preparation, config rendering |
 
 ## Installation
 
 Tested with Python 3.10, CUDA 12.8 and PyTorch 2.9.0 on RTX PRO 6000 Blackwell GPUs (sm_120, 96 GB).
 
-1. **Python environment**
+1. **Python environment** (a fresh Python 3.10 venv or conda env)
    ```bash
+   python -m pip install -U pip        # an old pip (e.g. 23.0) rejects some wheels' metadata
    pip install torch==2.9.0 torchvision==0.24.0 --index-url https://download.pytorch.org/whl/cu128
    pip install -r requirements.txt
    ```
-2. **TRELLIS.2** at commit `75fbf01`, with its CUDA extensions (`o-voxel`, `FlexGEMM`, `CuMesh`, `nvdiffrast`,
-   `flash-attn==2.7.3`), built with TRELLIS.2's `setup.sh`.
+2. **TRELLIS.2** at commit `75fbf01` and its CUDA extensions (`nvdiffrast` v0.4.0, `CuMesh`, `FlexGEMM`, `o-voxel`,
+   `flash-attn==2.7.3`). The extensions are built as wheels into `third_party/site-packages`, which comes first on the
+   path of SuperFine3D and of the Pixal3D worker, so both environments share them.
    ```bash
    git clone https://github.com/microsoft/TRELLIS.2.git third_party/TRELLIS.2
    git -C third_party/TRELLIS.2 checkout 75fbf01
+   bash setup/build_extensions.sh      # sources in .cache/ext_src (pinned revisions), wheels -> third_party/site-packages
    ```
-   Wheels built for a GPU architecture that the stock wheels lack can be installed with
-   `pip install --target third_party/site-packages`; that directory comes first on the path.
+   Build notes (also for step 3):
+   - CUDA 12.8's `nvcc` accepts host compilers up to gcc 14. With a newer system gcc, point `CC`, `CXX` and
+     `CUDAHOSTCXX` to a gcc &le; 14 (e.g. conda's `gxx_linux-64=14`).
+   - The extensions include cuSPARSE / cuBLAS headers through PyTorch. If your CUDA toolkit does not ship them, use the
+     headers of PyTorch's `nvidia-*` wheels:
+     `export CPATH=$(python -c "import nvidia, glob, os; print(':'.join(glob.glob(os.path.join(nvidia.__path__[0], '*', 'include'))))")`
+   - The default target is sm_120; set `TORCH_CUDA_ARCH_LIST` / `FLASH_ATTN_CUDA_ARCHS` for other GPUs.
+   - `setup/flex_autotune.json` holds the FlexGEMM kernel choices of our runs (RTX PRO 6000 Blackwell). `setup/env.sh`
+     copies it into `.cache/` on first use, so on that GPU the 512³ start and the camera fit match ours exactly; other GPUs
+     autotune on their first run (slower first run).
 3. **Our attention kernel**
    ```bash
    bash setup/build_kernels.sh
    ```
 4. **Pixal3D** (512³ start; only needed for the default `pixal3d` start): clone [TencentARC/Pixal3D](https://github.com/TencentARC/Pixal3D) at commit `f7cf384`
-   into `third_party/Pixal3D/repo`. Install it in its own virtual environment (`third_party/Pixal3D/venv`) following
-   its README, and put its weights in `third_party/Pixal3D/weights`.
+   into `third_party/Pixal3D/repo`. Install its Python requirements in its own Python 3.10 virtual environment
+   (`third_party/Pixal3D/venv`) following its README; its CUDA extensions come from `third_party/site-packages` (step 2).
+   Put its weights in `third_party/Pixal3D/weights`.
 5. **Detail estimator code and base weights**
-   - Clone [Stable-X/StableNormal](https://github.com/Stable-X/StableNormal) into `third_party/StableNormal`.
+   - Clone [hugoycj/StableNormal](https://github.com/hugoycj/StableNormal) at commit `1b7203c` into `third_party/StableNormal`
+     (its YOSO pipeline differs from the Stable-X/StableNormal head):
+     ```bash
+     git clone https://github.com/hugoycj/StableNormal.git third_party/StableNormal
+     git -C third_party/StableNormal checkout 1b7203c
+     ```
    - Download `Stable-X/yoso-normal-v1-8-1` (NiRNE) and point `SF3D_NIRNE_WEIGHTS` to it.
 6. **TRELLIS.2-4B weights**
    - Download `microsoft/TRELLIS.2-4B` and point `SF3D_TRELLIS2_WEIGHTS` to the snapshot.
@@ -250,7 +267,8 @@ bash evaluation/cam_t4k.sh LIST                                # baseline camera
 
 - **Geometry:** each mesh is normalised and rigidly aligned to the ground truth (100k samples). CD-L1 and F-scores are
   then computed point-to-triangle with 2M samples per direction.
-- **DQ** uses [MeshyBench](https://github.com/meshy-dev/meshybench); point `SF3D_MESHYBENCH` to a checkout.
+- **DQ** uses [MeshyBench](https://github.com/meshy-dev/meshybench) at commit `5cce370`; point `SF3D_MESHYBENCH` to that
+  checkout (default `third_party/meshybench`).
 - **Image-space fidelity:** each method is rendered with its own image-only fitted camera on the pixel grid of the
   input crop and compared with ground-truth normals. The 4–16 px and 16–64 px band correlations are normal-map
   correlations after band-pass filtering.

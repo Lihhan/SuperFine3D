@@ -5,7 +5,7 @@ usage: score_extra.py KEY MESH OUT.json"""
 from os import environ as _E   # install locations, set by setup/env.sh (SF3D_ROOT, SF3D_CKPT, ...)
 import sys,json,time,numpy as np,torch
 E=f'{_E["SF3D_TOYS4K_EVAL"]}'
-sys.path[:0]=[E+'/detail_pilot_TC002/meshybench/src',E+'/code']
+sys.path[:0]=[f'{_E["SF3D_MESHYBENCH"]}/src',f'{_E["SF3D_ROOT"]}/evaluation/toys4k']
 import toys_metrics_v4 as v4,detail100_distance as dx,detail_batched_render
 from fair_alignment import transform_mesh
 from meshybench import mesh_details

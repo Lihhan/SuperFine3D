@@ -145,7 +145,7 @@ PX=f'{WD}/pixal'
 if PIXAL:os.makedirs(PX,exist_ok=True)
 penv={k:v_ for k,v_ in os.environ.items() if not k.startswith(('DECODE_','OPT_','EST_','CAMREF_','CAMFIT_'))}
 penv.update(HF_HUB_OFFLINE=os.environ.get('PIXAL_HF_OFFLINE','1'),HF_HUB_CACHE=f'{_E["SF3D_PIXAL3D_HF_CACHE"]}',PIXAL_FAST='1',
-            PYTHONPATH=f'{_E["SF3D_ROOT"]}/third_party/site-packages:{_E["SF3D_TRELLIS2_REPO"]}/o-voxel')
+            PYTHONPATH=f'{_E["SF3D_ROOT"]}/third_party/site-packages')
 penv['PXCHAIN_THREADS']=str(OPT['camthreads'] or 4)   # camera thread count of the chain (exact; 4 = queue lib.sh)
 if OPT['camfast']:penv['PXCHAIN_FAST']='1'
 if OPT['noinit']:penv['PIXAL_NOINIT']='1'

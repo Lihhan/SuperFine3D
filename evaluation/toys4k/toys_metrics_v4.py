@@ -6,7 +6,7 @@ import numpy as np
 import trimesh
 from scipy.spatial import cKDTree
 R=Path(f'{_E["SF3D_TOYS4K_EVAL"]}')
-sys.path[:0]=[str(R/'code'),f'{_E["SF3D_ROOT"]}/third_party/site-packages',f'{_E["SF3D_ROOT"]}/third_party/site-packages']
+sys.path[:0]=[f'{_E["SF3D_ROOT"]}/evaluation/toys4k',f'{_E["SF3D_ROOT"]}/third_party/site-packages',f'{_E["SF3D_ROOT"]}/third_party/site-packages']
 import toys_metrics_v4_base as base
 from fair_alignment import validate,transform_mesh
 VERSION='generation_sphere_normalized_v4'
