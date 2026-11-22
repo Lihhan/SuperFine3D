@@ -17,8 +17,8 @@
 Hunyuan3D-2.1, Pixal3D, Direct3D-S2, UltraShape and ours, with zooms A and B; detail quality vs. end-to-end time; latency of
 one attention layer and one DiT block vs. high-resolution tokens.</sub></p>
 
-| <h3>4096³</h3>decoder grid (sparse 256³ latent) | <h3>176 s</h3>image &rarr; 4096³ mesh | <h3>9.4&times;</h3>faster than full-attention recursion, 23.0% less memory | <h3>525&times;</h3>faster attention layer at 708k tokens | <h3>28&times;</h3>faster DiT block at 708k tokens |
-|:---:|:---:|:---:|:---:|:---:|
+| <h3>4096³</h3>decoder grid (sparse 256³ latent) | <h3>9.4&times;</h3>faster than full-attention recursion, 23.0% less memory | <h3>525&times;</h3>faster attention layer at 708k tokens | <h3>28&times;</h3>faster DiT block at 708k tokens |
+|:---:|:---:|:---:|:---:|
 
 ## Overview
 
