@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/css/style.css?v=20261122b">
+<link rel="stylesheet" href="static/css/style.css?v=20261122c">
 </head>
 <body>
 <nav class="nav" id="nav">
@@ -77,16 +77,15 @@
   </div>
 
   <div class="wrap stats reveal">
-    <div class="stat"><div class="num"><span class="count" data-to="4096">4096</span><sup>3</sup></div><div class="lbl">decoder-grid resolution<br>(sparse 256<sup>3</sup> latent lattice)</div></div>
-    <div class="stat"><div class="num"><span class="count" data-to="176.2" data-dec="1">176.2</span><small>s</small></div><div class="lbl">image &rarr; 4096<sup>3</sup> mesh<br>on one GPU</div></div>
+    <div class="stat"><div class="num">4096<sup>3</sup></div><div class="lbl">decoder-grid resolution<br>(sparse 256<sup>3</sup> latent lattice)</div></div>
     <div class="stat"><div class="num"><span class="count" data-to="9.4" data-dec="1">9.4</span><small>&times;</small></div><div class="lbl">faster than a full-attention<br>recursive baseline</div></div>
     <div class="stat"><div class="num"><span class="count" data-to="525">525</span><small>&times;</small></div><div class="lbl">faster attention layer<br>at 708k tokens</div></div>
     <div class="stat"><div class="num"><span class="count" data-to="28">28</span><small>&times;</small></div><div class="lbl">faster DiT block<br>at 708k tokens</div></div>
   </div>
 
   <div class="wrap tldr reveal">
-    <p>One refinement operator, trained only on 512<sup>3</sup>&ndash;1024<sup>3</sup> representations and <b>applied recursively</b>,
-      turns a single image into <span class="hl">4096<sup>3</sup> geometry</span> in about <b>three minutes on one GPU</b>.</p>
+    <p>One refinement operator, trained only on <span style="white-space:nowrap">512<sup>3</sup>&ndash;1024<sup>3</sup></span> representations and <b>applied recursively</b>,
+      turns a single image into <span class="hl">4096<sup>3</sup> geometry</span>.</p>
   </div>
 </header>
 
