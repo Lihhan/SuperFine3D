@@ -68,13 +68,13 @@ UltraShape.
 <details>
 <summary><b>More results</b> (off-view detail, textured inputs, input resolution, two views, ablations)</summary>
 
-<p align="center"><img src="docs/static/img/supp_more_comparisons.jpg" width="100%" alt="Additional comparisons"><br>
+<p align="center"><img src="docs/static/img/more_comparisons.jpg" width="100%" alt="Additional comparisons"><br>
 <sub><b>Additional comparisons</b>: carved censer, guardian lion and pangolin (generated images), and ornate wooden door.</sub></p>
 
-<p align="center"><img src="docs/static/img/supp_offview.jpg" width="80%" alt="Detail holds off the input view"><br>
+<p align="center"><img src="docs/static/img/offview.jpg" width="80%" alt="Detail holds off the input view"><br>
 <sub><b>Detail holds off the input view</b>: close-ups rendered with the object turned by 30&deg;.</sub></p>
 
-<p align="center"><img src="docs/static/img/supp_textured.jpg" width="100%" alt="Image appearance is not carved into the surface"><br>
+<p align="center"><img src="docs/static/img/textured.jpg" width="100%" alt="Image appearance is not carved into the surface"><br>
 <sub><b>Image appearance is not carved into the surface</b>: carved feathers, chased medallions and carved scales are recovered;
 grain stripes and painted checks do not become relief.</sub></p>
 
@@ -90,7 +90,7 @@ Photos: The Cleveland Museum of Art, Open Access (CC0).</sub></p>
 
 The [project page](https://lihhan.github.io/SuperFine3D-page/) (`docs/`) has an interactive 3D viewer: SuperFine3D side by
 side with each baseline under one camera, click-to-zoom, and hotspots that load full-resolution geometry; plus the
-supplementary video.
+project video.
 
 ## Repository layout
 

@@ -1,4 +1,4 @@
-"""Image-space normal fidelity on Toys4k with each method's OWN image-only camera (the supp protocol, Table-1 column).
+"""Image-space normal fidelity on Toys4k with each method's OWN image-only camera (fitted-camera protocol, Table-1 column).
 GT normals: the GT mesh rendered with the TRUE input camera of the Toys4k render (prepare.json: orthographic, yaw/pitch,
 ortho_scale 1.55, 1024 px; toys_benchmark_prepare.py conventions) on the pixel grid of the input crop (the fitted preprocess box of
 the input, W0 = crop_input.py size). Each result: rendered with its own fitted camera (cam_refined.json P on the same box) on the

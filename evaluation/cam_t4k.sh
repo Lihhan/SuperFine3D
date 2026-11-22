@@ -1,6 +1,6 @@
 #!/bin/bash
 # Table-1 image-space fidelity of the Toys4k baselines (fitted-camera protocol): for each asset, the image-only camera of each
-# baseline mesh (TRELLIS.2 1536, Hunyuan3D-2.1 1024, Pixal3D 1536) exactly as for the relief baselines (supp_queue.sh base():
+# baseline mesh (TRELLIS.2 1536, Hunyuan3D-2.1 1024, Pixal3D 1536) exactly as for the relief baselines (
 # fit_input_camera.py + camera_refine.py on the raw mesh); when the refined silhouette IoU < 0.85 the Z-up variant of zup_cam.sh
 # (unit-normalised, Y-up -> Z-up, full-circle fit_wide.py + guarded refine) is fitted too and the higher IoU is kept (recorded).
 # Then fid_t4k_img.py on the asset. usage: cam_t4k.sh LIST   -> t4kcam/KEY/<method>/cam_*.json, t4kimg/KEY.json
