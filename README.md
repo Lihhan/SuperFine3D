@@ -340,8 +340,12 @@ The two-view example photos are from the Cleveland Museum of Art Open Access col
 
 ```bibtex
 @misc{li2026superfine3d,
-  title  = {SuperFine3D: Efficient Global-Local Recursive Refinement for Extremely Detailed 3D Geometry Generation},
-  author = {Li, Lihan and Zhou, Junwei and Tai, Yu-Wing},
-  year   = {2026}
+  title         = {SuperFine3D: Efficient Global-Local Recursive Refinement for Extremely Detailed 3D Geometry Generation},
+  author        = {Li, Lihan and Zhou, Junwei and Tai, Yu-Wing},
+  year          = {2026},
+  eprint        = {2611.29630},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CV},
+  url           = {https://arxiv.org/abs/2611.29630}
 }
 ```
