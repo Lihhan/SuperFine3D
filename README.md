@@ -5,7 +5,7 @@
 ### Efficient Global-Local Recursive Refinement for Extremely Detailed 3D Geometry Generation
 
 <a href="https://lihhan.github.io/SuperFine3D-page/"><img alt="Project page" src="https://img.shields.io/badge/Project-Page-ff9a4a?style=for-the-badge"></a>
-<img alt="Paper" src="https://img.shields.io/badge/Paper-coming%20soon-555?style=for-the-badge">
+<a href="https://arxiv.org/abs/2611.29630"><img alt="arXiv" src="https://img.shields.io/badge/arXiv-2611.29630-b31b1b?style=for-the-badge"></a>
 
 **A single image &rarr; 4096³ geometry in about three minutes on one GPU.**
 
